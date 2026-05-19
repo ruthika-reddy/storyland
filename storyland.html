@@ -1,0 +1,1763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Advi & Avi's Story World 📚</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#FFF8EE; --card:#fff; --ink:#2C1A10; --soft:rgba(44,26,16,.55);
+  --orange:#FF6B35; --purple:#9B5DE5; --teal:#2EC4B6; --yellow:#FFD60A;
+  --green:#06D6A0; --pink:#FF69B4; --border:#F3E8D0;
+  --shadow:0 4px 24px rgba(44,26,16,.10); --shadow-lg:0 16px 48px rgba(44,26,16,.16);
+}
+html{scroll-behavior:smooth}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
+h1,h2,h3{font-family:'Baloo 2',cursive}
+
+/* ── NAV ── */
+nav{position:sticky;top:0;z-index:100;background:rgba(255,248,238,.95);backdrop-filter:blur(14px);border-bottom:2px solid var(--border);padding:0 1.5rem}
+.nav-inner{max-width:1100px;margin:auto;height:62px;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.logo{font-family:'Baloo 2',cursive;font-size:1.45rem;font-weight:800;text-decoration:none;color:var(--ink)}
+.logo span{color:var(--orange)}
+.nav-right{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:.35rem;padding:.48rem 1.2rem;border-radius:50px;font-weight:800;font-size:.88rem;cursor:pointer;border:none;font-family:'Nunito',sans-serif;text-decoration:none;transition:transform .18s,box-shadow .18s}
+.btn:hover{transform:translateY(-2px)}
+.btn-orange{background:var(--orange);color:#fff;box-shadow:0 4px 14px rgba(255,107,53,.38)}
+.btn-purple{background:var(--purple);color:#fff;box-shadow:0 4px 14px rgba(155,93,229,.38)}
+.btn-teal{background:var(--teal);color:#fff;box-shadow:0 4px 14px rgba(46,196,182,.38)}
+.btn-green{background:var(--green);color:#fff;box-shadow:0 4px 14px rgba(6,214,160,.38)}
+.btn-outline{background:transparent;color:var(--ink);border:2px solid var(--border)}
+.btn-outline:hover{border-color:var(--orange);color:var(--orange)}
+.btn-sm{padding:.35rem .9rem;font-size:.8rem}
+.icon-btn{width:38px;height:38px;border-radius:50%;border:2px solid var(--border);background:var(--card);cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;transition:transform .18s,border-color .18s}
+.icon-btn:hover{transform:scale(1.1);border-color:var(--orange)}
+
+/* ── HERO ── */
+.hero{text-align:center;padding:3.5rem 1.5rem 2.5rem;max-width:760px;margin:auto}
+.hero-badge{display:inline-block;background:linear-gradient(135deg,var(--orange),var(--purple));color:#fff;border-radius:50px;padding:.3rem 1.1rem;font-size:.82rem;font-weight:800;margin-bottom:1.2rem}
+.hero h1{font-size:clamp(2rem,5vw,3rem);font-weight:800;line-height:1.15;margin-bottom:.9rem}
+.hero h1 span{color:var(--orange)}
+.hero p{font-size:1.05rem;color:var(--soft);line-height:1.7;margin-bottom:2rem}
+.hero-btns{display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap}
+
+/* ── STORY GRID ── */
+.section-head{max-width:1100px;margin:0 auto;padding:2rem 1.5rem .8rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.8rem}
+.section-head h2{font-size:1.5rem;font-weight:800}
+.grid{max-width:1100px;margin:0 auto;padding:.5rem 1.5rem 3rem;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.5rem}
+
+/* ── STORY CARD ── */
+.card{background:var(--card);border-radius:20px;overflow:hidden;box-shadow:var(--shadow);cursor:pointer;transition:transform .22s,box-shadow .22s;border:2px solid transparent;position:relative}
+.card:hover{transform:translateY(-6px);box-shadow:var(--shadow-lg);border-color:var(--border)}
+.card-img{height:180px;overflow:hidden;position:relative;background:#f0e8d8}
+.card-img img{width:100%;height:100%;object-fit:cover;transition:transform .38s}
+.card:hover .card-img img{transform:scale(1.06)}
+.card-img-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.32),transparent 60%)}
+.card-badge{position:absolute;bottom:.55rem;left:.65rem;background:rgba(0,0,0,.55);color:#fff;border-radius:50px;padding:.15rem .6rem;font-size:.72rem;font-weight:700}
+.card-type{position:absolute;top:.6rem;right:.6rem;background:var(--purple);color:#fff;border-radius:50px;padding:.15rem .65rem;font-size:.7rem;font-weight:800}
+.card-body{padding:1rem 1.1rem 1.2rem}
+.card-title{font-family:'Baloo 2',cursive;font-size:1.05rem;font-weight:800;color:var(--orange);margin-bottom:.3rem;line-height:1.3}
+.card-preview{font-size:.83rem;color:var(--soft);line-height:1.55;margin-bottom:.7rem}
+.card-footer{display:flex;align-items:center;justify-content:space-between}
+.card-read{font-size:.82rem;font-weight:800;color:var(--orange);display:flex;align-items:center;gap:.3rem}
+.card-actions{display:flex;gap:.4rem}
+.card-action-btn{width:28px;height:28px;border-radius:50%;border:2px solid var(--border);background:var(--bg);cursor:pointer;font-size:.8rem;display:flex;align-items:center;justify-content:center;transition:all .18s}
+.card-action-btn:hover{border-color:var(--orange);background:var(--orange);color:#fff}
+
+/* Mini QR thumbnail in card corner */
+.card-qr{position:absolute;bottom:.55rem;right:.55rem;width:54px;height:54px;background:#fff;border-radius:10px;padding:4px;box-shadow:0 4px 14px rgba(0,0,0,.28);cursor:pointer;transition:transform .18s,box-shadow .18s;display:flex;align-items:center;justify-content:center;border:2px solid rgba(255,255,255,.6)}
+.card-qr:hover{transform:scale(1.12) rotate(-3deg);box-shadow:0 6px 20px rgba(0,0,0,.36)}
+.card-qr canvas{width:100%;height:100%;display:block;image-rendering:pixelated;image-rendering:crisp-edges;border-radius:4px}
+.card-qr::after{content:'📱';position:absolute;top:-6px;right:-6px;background:var(--orange);color:#fff;border-radius:50%;width:18px;height:18px;font-size:.62rem;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.3)}
+
+/* empty state */
+.empty-state{grid-column:1/-1;text-align:center;padding:4rem 1rem;color:var(--soft)}
+.empty-state .big{font-size:3.5rem;margin-bottom:.8rem}
+.empty-state p{font-size:1rem;line-height:1.7}
+
+/* ── VIEWER MODAL ── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:200;display:flex;align-items:center;justify-content:center;padding:1rem;opacity:0;pointer-events:none;transition:opacity .28s}
+.overlay.open{opacity:1;pointer-events:all}
+.viewer-box{background:var(--bg);border-radius:24px;width:100%;max-width:740px;max-height:96vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 30px 80px rgba(0,0,0,.5);transform:translateY(24px) scale(.97);transition:transform .28s}
+.overlay.open .viewer-box{transform:none}
+
+/* viewer header */
+.viewer-head{padding:1rem 1.4rem;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid var(--border);flex-shrink:0;gap:.8rem}
+.viewer-title{font-size:1.15rem;font-weight:800;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.viewer-head-actions{display:flex;gap:.5rem;flex-shrink:0}
+.vclose{width:34px;height:34px;border-radius:50%;background:var(--border);border:none;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .18s}
+.vclose:hover{transform:rotate(90deg)}
+
+/* viewer stage — image */
+.viewer-stage{flex:1;overflow:hidden;background:#0e0b08;display:flex;align-items:center;justify-content:center;position:relative;min-height:260px}
+.viewer-stage img{max-width:100%;max-height:58vh;object-fit:contain;border-radius:10px;transition:opacity .2s}
+.viewer-stage img.fade{opacity:0}
+
+/* caption */
+.viewer-caption{padding:.85rem 1.4rem;text-align:center;font-size:1rem;font-weight:700;line-height:1.55;min-height:3.2rem;border-top:2px solid var(--border);flex-shrink:0;background:var(--bg)}
+.viewer-caption.hidden{display:none}
+
+/* audio bar */
+.audio-bar{display:flex;align-items:center;gap:.6rem;padding:.6rem 1.2rem;background:var(--border);flex-shrink:0;flex-wrap:wrap}
+.audio-bar label{font-size:.75rem;font-weight:800;color:var(--soft);white-space:nowrap}
+.ab-btn{display:inline-flex;align-items:center;gap:.3rem;padding:.3rem .85rem;border-radius:50px;font-size:.78rem;font-weight:800;cursor:pointer;border:2px solid;font-family:'Nunito',sans-serif;transition:all .2s}
+.ab-tts{border-color:var(--teal);color:var(--teal);background:transparent}
+.ab-tts:hover,.ab-tts.on{background:var(--teal);color:#fff}
+.ab-upload{border-color:var(--purple);color:var(--purple);background:transparent}
+.ab-upload:hover{background:var(--purple);color:#fff}
+#vw-audio{height:28px;flex:1;min-width:120px;display:none;border-radius:4px}
+#vw-audio.show{display:block}
+/* Storyteller voice bar */
+.ab-voice-pick{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;flex:1}
+.voice-chip{display:inline-flex;align-items:center;gap:.35rem;padding:.35rem .9rem;border-radius:50px;border:2.5px solid var(--border);background:var(--card);font-size:.8rem;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;color:var(--ink);transition:all .22s;white-space:nowrap}
+.voice-chip:hover{transform:translateY(-1px);border-color:var(--purple);color:var(--purple)}
+.voice-chip.speaking{border-color:var(--orange);background:var(--orange);color:#fff;animation:chip-pulse .65s ease-in-out infinite alternate}
+@keyframes chip-pulse{from{transform:scale(1)}to{transform:scale(1.07)}}
+.vc-stop{display:inline-flex;align-items:center;gap:.3rem;padding:.35rem .9rem;border-radius:50px;border:2.5px solid var(--orange);background:transparent;font-size:.8rem;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;color:var(--orange);transition:all .2s;white-space:nowrap}
+.vc-stop:hover{background:var(--orange);color:#fff}
+
+/* Voice section divider + label inside audio bar */
+.voice-section-label{font-size:.7rem;font-weight:800;color:var(--soft);text-transform:uppercase;letter-spacing:.5px;width:100%;margin-top:.2rem;display:flex;align-items:center;gap:.4rem}
+.voice-section-label::after{content:'';flex:1;height:1.5px;background:rgba(44,26,16,.10);border-radius:2px}
+.voice-section-label .open-vpm{margin-left:auto;background:transparent;border:none;color:var(--purple);font-weight:800;font-size:.72rem;cursor:pointer;padding:.1rem .4rem;border-radius:6px;font-family:'Nunito',sans-serif}
+.voice-section-label .open-vpm:hover{background:rgba(155,93,229,.12)}
+
+/* Person (custom narrator) chips */
+.person-chip{display:inline-flex;align-items:center;gap:.35rem;padding:.35rem .9rem;border-radius:50px;border:2.5px solid var(--border);background:var(--card);font-size:.8rem;font-weight:800;cursor:pointer;font-family:'Nunito',sans-serif;color:var(--ink);transition:all .22s;white-space:nowrap}
+.person-chip:hover{transform:translateY(-1px);border-color:var(--green);color:var(--green)}
+.person-chip.has-rec{border-color:var(--green);color:var(--green);background:rgba(6,214,160,.06)}
+.person-chip.has-rec:hover{background:var(--green);color:#fff}
+.person-chip.playing{border-color:var(--orange);background:var(--orange);color:#fff;animation:chip-pulse .65s ease-in-out infinite alternate}
+
+/* ── PERSON / NARRATOR MANAGER MODAL ── */
+.vpm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:300;display:none;align-items:flex-start;justify-content:center;padding:1rem;overflow-y:auto}
+.vpm-overlay.open{display:flex}
+.vpm-box{background:var(--bg);border-radius:24px;width:100%;max-width:560px;margin:auto;box-shadow:0 24px 80px rgba(0,0,0,.4);overflow:hidden}
+.vpm-head{background:linear-gradient(135deg,var(--teal),var(--purple));color:#fff;padding:1.1rem 1.5rem;display:flex;align-items:center;justify-content:space-between}
+.vpm-head h2{font-size:1.2rem;font-weight:800}
+.vpm-body{padding:1.3rem 1.5rem 1.6rem}
+.vpm-intro{font-size:.85rem;color:var(--soft);line-height:1.55;margin-bottom:1rem}
+.vpm-add-row{display:flex;gap:.5rem;align-items:stretch;margin-bottom:1.2rem}
+.vpm-add-row input{padding:.55rem .9rem;border-radius:10px;border:2px solid var(--border);background:var(--card);color:var(--ink);font-family:'Nunito',sans-serif;font-size:.9rem;font-weight:700;outline:none;transition:border-color .2s}
+.vpm-add-row input:focus{border-color:var(--orange)}
+.vpm-add-row .emoji-in{width:64px;text-align:center;font-size:1.1rem}
+.vpm-add-row .name-in{flex:1;min-width:0}
+.vpm-add-btn{padding:.55rem 1.1rem;border-radius:10px;background:var(--orange);color:#fff;border:none;font-weight:800;font-size:.85rem;cursor:pointer;white-space:nowrap;font-family:'Nunito',sans-serif;transition:transform .15s,box-shadow .15s;box-shadow:0 3px 10px rgba(255,107,53,.32)}
+.vpm-add-btn:hover{transform:translateY(-1px)}
+.vpm-list{display:flex;flex-direction:column;gap:.6rem;max-height:50vh;overflow-y:auto}
+.vpm-item{background:var(--card);border-radius:14px;border:2px solid var(--border);overflow:hidden}
+.vpm-item-head{display:flex;align-items:center;gap:.55rem;padding:.65rem .85rem;flex-wrap:wrap}
+.vpm-item-name{flex:1;font-weight:800;font-size:.95rem;min-width:120px}
+.vpm-rec-btn{display:inline-flex;align-items:center;gap:.3rem;padding:.35rem .85rem;border-radius:50px;border:2px solid var(--teal);background:transparent;color:var(--teal);font-weight:800;font-size:.78rem;cursor:pointer;font-family:'Nunito',sans-serif;transition:all .2s;white-space:nowrap}
+.vpm-rec-btn:hover{background:var(--teal);color:#fff}
+.vpm-rec-btn.recording{border-color:#e44;background:#e44;color:#fff;animation:chip-pulse .4s infinite alternate}
+.vpm-upload-btn{display:inline-flex;align-items:center;gap:.3rem;padding:.35rem .85rem;border-radius:50px;border:2px solid var(--purple);background:transparent;color:var(--purple);font-weight:800;font-size:.78rem;cursor:pointer;font-family:'Nunito',sans-serif;transition:all .2s;white-space:nowrap}
+.vpm-upload-btn:hover{background:var(--purple);color:#fff}
+.vpm-del{width:30px;height:30px;border-radius:50%;background:rgba(255,60,60,.12);border:none;color:#e44;cursor:pointer;font-size:.85rem;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:background .18s}
+.vpm-del:hover{background:rgba(255,60,60,.28)}
+.vpm-has-audio{display:flex;flex-direction:column;gap:.3rem;padding:.5rem .85rem .65rem;background:rgba(46,196,182,.07);border-top:1.5px solid var(--border)}
+.vpm-has-audio audio{height:28px}
+.vpm-empty{text-align:center;color:var(--soft);font-size:.88rem;padding:1.4rem .5rem;font-style:italic}
+/* nav row */
+.viewer-nav{display:flex;align-items:center;justify-content:space-between;padding:.8rem 1.2rem;border-top:2px solid var(--border);flex-shrink:0;gap:.6rem}
+.vnav-btn{width:44px;height:44px;border-radius:50%;background:var(--orange);color:#fff;border:none;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .18s,opacity .18s}
+.vnav-btn:disabled{opacity:.3;cursor:default;transform:none !important}
+.vnav-btn:not(:disabled):hover{transform:scale(1.1)}
+.viewer-dots{display:flex;gap:.38rem;flex-wrap:wrap;justify-content:center;flex:1}
+.vdot{width:9px;height:9px;border-radius:50%;background:var(--border);cursor:pointer;transition:all .18s;border:none}
+.vdot.on{background:var(--orange);transform:scale(1.45)}
+.vcounter{font-size:.8rem;font-weight:700;color:var(--soft);white-space:nowrap}
+
+/* single-image viewer (no panels) */
+.single-viewer{overflow-y:auto;flex:1}
+.sv-img{width:100%;border-radius:0}
+.sv-body{padding:1.5rem 1.8rem 2rem}
+.sv-body p{margin-bottom:1.1em;line-height:1.9;font-size:1.02rem}
+
+/* ── ADD STORY MODAL ── */
+.add-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:300;display:none;align-items:flex-start;justify-content:center;padding:1rem;overflow-y:auto}
+.add-overlay.open{display:flex}
+.add-box{background:var(--bg);border-radius:24px;width:100%;max-width:680px;margin:auto;box-shadow:0 24px 80px rgba(0,0,0,.4);overflow:hidden}
+.add-head{background:linear-gradient(135deg,var(--orange),var(--purple));color:#fff;padding:1.2rem 1.6rem;display:flex;align-items:center;justify-content:space-between}
+.add-head h2{font-size:1.25rem;font-weight:800}
+.add-close{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.25);border:none;color:#fff;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .18s}
+.add-close:hover{transform:rotate(90deg)}
+.add-body{padding:1.5rem}
+.fg{margin-bottom:1rem}
+.fg label{display:block;font-size:.8rem;font-weight:800;margin-bottom:.32rem;color:var(--soft)}
+.fg input,.fg textarea,.fg select{width:100%;padding:.52rem .9rem;border-radius:10px;border:2px solid var(--border);background:var(--card);color:var(--ink);font-family:'Nunito',sans-serif;font-size:.9rem;font-weight:600;outline:none;transition:border-color .2s}
+.fg input:focus,.fg textarea:focus,.fg select:focus{border-color:var(--orange)}
+.fg textarea{min-height:80px;resize:vertical;line-height:1.6}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+
+/* type toggle */
+.type-row{display:flex;gap:.5rem;margin-bottom:1rem}
+.type-opt{flex:1;padding:.55rem .8rem;border-radius:12px;border:2px solid var(--border);background:var(--card);font-weight:800;font-size:.85rem;cursor:pointer;text-align:center;transition:all .2s;color:var(--soft);font-family:'Nunito',sans-serif}
+.type-opt.on{background:var(--orange);border-color:var(--orange);color:#fff}
+
+/* upload area */
+.drop-area{border:2.5px dashed var(--border);border-radius:14px;padding:1.3rem;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;background:var(--card)}
+.drop-area:hover{border-color:var(--orange);background:rgba(255,107,53,.03)}
+.drop-area input{display:none}
+.drop-hint{font-size:.78rem;color:var(--soft);margin-top:.3rem}
+.cover-preview{width:100%;max-height:150px;object-fit:cover;border-radius:8px;margin-top:.6rem;display:none}
+.cover-preview.show{display:block}
+
+/* panels list */
+.panels-list{display:flex;flex-direction:column;gap:.55rem;margin-top:.6rem}
+.panel-row{display:flex;align-items:center;gap:.6rem;background:var(--border);border-radius:10px;padding:.55rem .7rem}
+.panel-thumb{width:52px;height:42px;object-fit:cover;border-radius:6px;flex-shrink:0}
+.panel-cap{flex:1;padding:.35rem .7rem;border-radius:8px;border:2px solid var(--card);background:var(--card);color:var(--ink);font-size:.82rem;font-weight:600;font-family:'Nunito',sans-serif;outline:none}
+.panel-cap:focus{border-color:var(--orange)}
+.panel-del{width:26px;height:26px;border-radius:50%;background:rgba(255,60,60,.12);border:none;color:#e44;cursor:pointer;font-size:.85rem;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:background .2s}
+.panel-del:hover{background:rgba(255,60,60,.28)}
+.add-panels-btn{display:flex;align-items:center;gap:.4rem;padding:.48rem 1rem;border-radius:50px;border:2.5px dashed var(--teal);color:var(--teal);background:transparent;font-weight:800;font-size:.8rem;cursor:pointer;font-family:'Nunito',sans-serif;transition:all .2s;margin-top:.5rem}
+.add-panels-btn:hover{background:var(--teal);color:#fff;border-style:solid}
+.form-actions{display:flex;gap:.7rem;margin-top:1.2rem;flex-wrap:wrap}
+
+/* story list inside manager */
+.mgr-list{display:flex;flex-direction:column;gap:.55rem;margin-top:1rem;max-height:340px;overflow-y:auto}
+.mgr-item{display:flex;align-items:center;gap:.7rem;background:var(--card);border-radius:12px;padding:.65rem .9rem;border:2px solid var(--border)}
+.mgr-thumb{width:48px;height:42px;object-fit:cover;border-radius:8px;flex-shrink:0;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:1.2rem}
+.mgr-info{flex:1;min-width:0}
+.mgr-ttl{font-weight:800;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mgr-sub{font-size:.74rem;color:var(--soft);font-weight:700}
+.mgr-btns{display:flex;gap:.38rem;flex-shrink:0}
+
+/* ── PRINT STYLES ── */
+@media print{
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+  body,html{background:#fff!important;margin:0;padding:0}
+  nav,.hero,.section-head,.grid,.add-overlay,.overlay,footer,.no-print{display:none!important}
+
+  .print-story-page,.print-booklet-page{display:block!important}
+
+  /* Full-page image — no title, no caption, no margin */
+  .ps-panel-page{
+    page-break-after:always;
+    margin:0;padding:0;
+    width:100vw;height:100vh;
+    display:flex;align-items:center;justify-content:center;
+    background:#fff;
+  }
+  .ps-panel-page:last-child{page-break-after:auto}
+  .ps-panel-page img{
+    max-width:100%;max-height:100%;
+    width:100%;height:100%;
+    object-fit:contain;
+    display:block;
+  }
+}
+.print-story-page,.print-booklet-page{display:none}
+
+/* ── QR SHARE MODAL ── */
+.qr-overlay{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:400;display:none;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(4px);overflow-y:auto}
+.qr-overlay.open{display:flex}
+.qr-box{background:var(--bg);border-radius:28px;width:100%;max-width:400px;max-height:calc(100vh - 2rem);overflow-y:auto;box-shadow:0 32px 96px rgba(0,0,0,.6);animation:qr-pop .32s cubic-bezier(.34,1.56,.64,1);flex-shrink:0}
+.qr-head{background:linear-gradient(135deg,var(--orange) 0%,#ff3ea5 60%,var(--purple) 100%);color:#fff;padding:1rem 1.3rem;display:flex;align-items:center;justify-content:space-between;position:relative;overflow:hidden;gap:.6rem}
+.qr-head::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.07'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");pointer-events:none}
+.qr-head h2{font-size:1.05rem;font-weight:800;position:relative;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qr-story-thumb{width:40px;height:40px;border-radius:9px;border:2px solid rgba(255,255,255,.5);flex-shrink:0;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:1.2rem;overflow:hidden;position:relative}
+.qr-story-thumb img{width:100%;height:100%;object-fit:cover}
+.qr-head-left{display:flex;align-items:center;gap:.6rem;flex:1;min-width:0;overflow:hidden}
+.qr-body{padding:1.2rem 1.4rem 1.5rem;text-align:center}
+.qr-label{font-size:.68rem;font-weight:800;color:var(--soft);text-transform:uppercase;letter-spacing:.8px;margin-bottom:.3rem}
+.qr-title-display{font-family:'Baloo 2',cursive;font-size:1rem;font-weight:800;color:var(--orange);margin-bottom:1rem;line-height:1.3;word-break:break-word}
+.qr-canvas-wrap{display:flex;align-items:center;justify-content:center;padding:14px;background:#fff;border-radius:18px;box-shadow:0 6px 24px rgba(44,26,16,.15),0 2px 8px rgba(255,107,53,.12);margin-bottom:1rem;position:relative}
+.qr-canvas-wrap::after{content:'📱';position:absolute;top:-9px;right:-9px;background:var(--orange);color:#fff;border-radius:50%;width:24px;height:24px;font-size:.72rem;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(255,107,53,.4)}
+.qr-canvas-wrap canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges;width:200px!important;height:200px!important;border-radius:4px}
+.qr-url{background:var(--card);border:2px solid var(--border);border-radius:12px;padding:.5rem .8rem;font-size:.72rem;font-family:monospace;color:var(--soft);word-break:break-all;margin-bottom:1rem;text-align:left;line-height:1.5;max-height:52px;overflow-y:auto}
+.qr-actions{display:flex;gap:.45rem;flex-wrap:nowrap}
+.qr-actions .btn{flex:1;justify-content:center;padding:.45rem .5rem;font-size:.78rem}
+.qr-hint{font-size:.74rem;color:var(--soft);margin-top:.8rem;line-height:1.5;display:flex;align-items:center;justify-content:center;gap:.3rem}
+.qr-hint::before{content:'✨'}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(100px);background:var(--ink);color:#fff;padding:.65rem 1.5rem;border-radius:50px;font-size:.88rem;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.3);z-index:500;transition:transform .3s;white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+/* ── FOOTER ── */
+footer{text-align:center;padding:2rem 1rem;color:var(--soft);font-size:.85rem;border-top:2px solid var(--border)}
+
+@media(max-width:600px){
+  .frow{grid-template-columns:1fr}
+  .viewer-stage img{max-height:42vh}
+  .nav-right .btn-teal{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="logo">📚 Advi &amp; <span>Avi</span></a>
+    <div class="nav-right">
+      <button class="btn btn-purple btn-sm" onclick="openAdd()">➕ Add Story</button>
+      <button class="btn btn-green btn-sm" onclick="openVPM()">🎙️ Voices</button>
+      <button class="btn btn-orange btn-sm" onclick="openQR()">📱 Share</button>
+      <button class="btn btn-teal btn-sm" onclick="openBookletPrint()">🖨️ Print All</button>
+      <button class="btn btn-outline btn-sm" onclick="exportStories()" title="Download all stories as a backup file">📦 Backup</button>
+      <button class="btn btn-outline btn-sm" onclick="importStories()" title="Restore stories from a backup file">📥 Restore</button>
+      <button class="icon-btn" id="theme-btn" onclick="toggleTheme()" title="Dark mode">🌙</button>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">✨ Advi &amp; Avi's Story World</div>
+  <h1>Little Kids,<br><span>Big Adventures!</span></h1>
+  <p>Comic stories full of fun, friendship and big lessons — add yours with pictures and audio!</p>
+  <div class="hero-btns">
+    <button class="btn btn-orange" onclick="document.getElementById('stories-section').scrollIntoView({behavior:'smooth'})">📖 Read Stories</button>
+    <button class="btn btn-purple" onclick="openAdd()">➕ Add a Story</button>
+  </div>
+</div>
+
+<!-- STORIES GRID -->
+<div class="section-head" id="stories-section">
+  <h2 id="story-count-label">Stories</h2>
+  <div style="display:flex;gap:.5rem">
+    <button class="btn btn-outline btn-sm" onclick="openAdd()">➕ Add Story</button>
+    <button class="btn btn-teal btn-sm" onclick="openBookletPrint()">🖨️ Print Booklet</button>
+  </div>
+</div>
+<div class="grid" id="story-grid">
+  <!-- rendered by JS -->
+</div>
+
+<!-- PRINT: single story page (hidden, shown only on print) -->
+<div class="print-story-page" id="print-single"></div>
+
+<!-- PRINT: full booklet page (hidden, shown only on print) -->
+<div class="print-booklet-page" id="print-booklet"></div>
+
+<footer>
+  Made with ❤️ for Advi &amp; Avi
+  <div id="storage-indicator" style="font-size:.75rem;margin-top:.35rem;opacity:.6"></div>
+</footer>
+
+<!-- ═══════════════════════════════════════
+     STORY VIEWER MODAL
+════════════════════════════════════════ -->
+<div class="overlay" id="viewer-overlay" onclick="handleViewerBg(event)">
+  <div class="viewer-box" id="viewer-box">
+
+    <div class="viewer-head">
+      <div class="viewer-title" id="vw-title">Story</div>
+      <div class="viewer-head-actions">
+        <button class="btn btn-orange btn-sm no-print" onclick="openQR(true)">📱 Share</button>
+        <button class="btn btn-teal btn-sm no-print" onclick="printCurrentStory()">🖨️ Print</button>
+        <button class="vclose" onclick="closeViewer()">✕</button>
+      </div>
+    </div>
+
+    <!-- Panel slideshow (for comic stories) -->
+    <div id="vw-panels-area">
+      <div class="viewer-stage">
+        <img id="vw-panel-img" src="" alt="">
+      </div>
+      <div class="viewer-caption" id="vw-caption"></div>
+      <div class="audio-bar" id="vw-audiobar">
+        <div class="voice-section-label">🤖 AI Voices</div>
+        <div class="ab-voice-pick" id="vw-chips"></div>
+        <div class="voice-section-label">
+          🎙️ Your Recordings
+          <button class="open-vpm" onclick="openVPM()">+ Manage</button>
+        </div>
+        <div class="ab-voice-pick" id="vw-persons"></div>
+      </div>
+      <div class="viewer-nav">
+        <button class="vnav-btn" id="vw-prev" onclick="panelStep(-1)">◀</button>
+        <div class="viewer-dots" id="vw-dots"></div>
+        <span class="vcounter" id="vw-counter">1 / 1</span>
+        <button class="vnav-btn" id="vw-next" onclick="panelStep(1)">▶</button>
+      </div>
+    </div>
+
+    <!-- Single image viewer (for single-image stories) -->
+    <div id="vw-single-area" style="display:none" class="single-viewer">
+      <img id="vw-single-img" class="sv-img" src="" alt="">
+      <div class="sv-body">
+        <div class="audio-bar" style="border-radius:10px;margin-bottom:1rem" id="vw-audiobar2">
+          <div class="voice-section-label">🤖 AI Voices</div>
+          <div class="ab-voice-pick" id="vw-chips2"></div>
+          <div class="voice-section-label">
+            🎙️ Your Recordings
+            <button class="open-vpm" onclick="openVPM()">+ Manage</button>
+          </div>
+          <div class="ab-voice-pick" id="vw-persons2"></div>
+        </div>
+        <div id="vw-single-content"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     ADD / EDIT STORY MODAL
+════════════════════════════════════════ -->
+<div class="add-overlay" id="add-overlay" onclick="handleAddBg(event)">
+  <div class="add-box">
+    <div class="add-head">
+      <h2 id="add-modal-title">➕ Add New Story</h2>
+      <button class="add-close" onclick="closeAdd()">✕</button>
+    </div>
+    <div class="add-body">
+
+      <!-- Story type -->
+      <div class="fg">
+        <label>Story Type</label>
+        <div class="type-row">
+          <div class="type-opt on"  id="t-comic"  onclick="setType('comic')">🎨 Comic Panels<br><small style="font-weight:600;opacity:.8">Multiple images = slideshow</small></div>
+          <div class="type-opt"     id="t-single" onclick="setType('single')">🖼️ Single Image<br><small style="font-weight:600;opacity:.8">One big image + text</small></div>
+        </div>
+      </div>
+
+      <div class="frow">
+        <div class="fg">
+          <label>Story Title *</label>
+          <input type="text" id="f-title" placeholder="e.g. The Lego Car Project">
+        </div>
+        <div class="fg">
+          <label>Short Preview *</label>
+          <input type="text" id="f-preview" placeholder="One exciting sentence…">
+        </div>
+      </div>
+
+      <!-- COMIC TYPE -->
+      <div id="comic-fields">
+        <div class="fg">
+          <label>Upload Panel Images <span style="color:var(--soft)">(select all at once OR add more below)</span></label>
+          <div class="drop-area" onclick="document.getElementById('panels-input').click()">
+            <div>🖼️ Click to upload panel images</div>
+            <div class="drop-hint">JPG · PNG · WebP — select multiple files in order</div>
+            <input type="file" id="panels-input" accept="image/*" multiple onchange="addPanels(event)">
+          </div>
+          <button class="add-panels-btn" onclick="document.getElementById('panels-extra').click()">➕ Add More Panels
+            <input type="file" id="panels-extra" accept="image/*" multiple style="display:none" onchange="addPanels(event)">
+          </button>
+          <div class="panels-list" id="panels-list"></div>
+        </div>
+      </div>
+
+      <!-- SINGLE IMAGE TYPE -->
+      <div id="single-fields" style="display:none">
+        <div class="fg">
+          <label>Upload Image (the full comic strip or illustration)</label>
+          <div class="drop-area" onclick="document.getElementById('single-input').click()">
+            <div>📷 Click to upload image</div>
+            <div class="drop-hint">JPG · PNG · WebP</div>
+            <input type="file" id="single-input" accept="image/*" onchange="setSingleImg(event)">
+            <img id="single-preview" class="cover-preview" alt="">
+          </div>
+        </div>
+        <div class="fg">
+          <label>Story Text / Description</label>
+          <textarea id="f-content" placeholder="Write what happens in this story…"></textarea>
+        </div>
+      </div>
+
+      <div class="fg" style="margin-top:.5rem">
+        <label><input type="checkbox" id="f-featured" style="width:auto;margin-right:.4rem"> Mark as Featured ⭐</label>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn btn-orange btn-sm" onclick="saveStory()">💾 Save Story</button>
+        <button class="btn btn-sm btn-outline" onclick="resetForm()">✕ Clear</button>
+      </div>
+
+      <!-- List of existing stories to edit/delete -->
+      <div style="margin-top:1.5rem;border-top:2px solid var(--border);padding-top:1rem">
+        <div style="font-size:.85rem;font-weight:800;color:var(--soft);margin-bottom:.4rem">YOUR STORIES</div>
+        <div class="mgr-list" id="mgr-list"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     NARRATOR / VOICE PERSON MANAGER MODAL
+════════════════════════════════════════ -->
+<div class="vpm-overlay" id="vpm-overlay" onclick="handleVpmBg(event)">
+  <div class="vpm-box">
+    <div class="vpm-head">
+      <h2>🎙️ Narrators &amp; Recordings</h2>
+      <button class="add-close" onclick="closeVPM()">✕</button>
+    </div>
+    <div class="vpm-body">
+      <p class="vpm-intro">
+        Add narrators (like Mama, Papa, Advi, Avi), then <strong>🎙️ Record</strong> live from your mic
+        or <strong>📁 Upload</strong> an MP3. Recordings are saved per story — open a story and tap a narrator chip to play.
+      </p>
+
+      <div class="vpm-add-row">
+        <input class="emoji-in" id="vpm-emoji" type="text" maxlength="2" value="👤" title="Emoji">
+        <input class="name-in"  id="vpm-name-input" type="text" placeholder="Narrator name (e.g. Mama, Advi…)">
+        <button class="vpm-add-btn" onclick="addPerson()">➕ Add</button>
+      </div>
+
+      <div class="vpm-list" id="vpm-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     QR SHARE MODAL
+════════════════════════════════════════ -->
+<div class="qr-overlay" id="qr-overlay" onclick="handleQrBg(event)">
+  <div class="qr-box">
+    <div class="qr-head">
+      <div class="qr-head-left">
+        <div class="qr-story-thumb" id="qr-thumb-wrap">
+          <img id="qr-thumb-img" src="" alt="" style="display:none;width:100%;height:100%;object-fit:cover">
+          <span id="qr-thumb-emoji">📖</span>
+        </div>
+        <h2 id="qr-head-title">📱 Share Story</h2>
+      </div>
+      <button class="add-close" onclick="closeQR()">✕</button>
+    </div>
+    <div class="qr-body">
+      <div class="qr-label" id="qr-label">Scan to open</div>
+      <div class="qr-title-display" id="qr-title-display"></div>
+      <div class="qr-canvas-wrap">
+        <canvas id="qr-canvas"></canvas>
+      </div>
+      <div class="qr-url" id="qr-url"></div>
+      <div class="qr-actions">
+        <button class="btn btn-orange btn-sm" onclick="copyShareUrl()">🔗 Copy Link</button>
+        <button class="btn btn-purple btn-sm" onclick="downloadQR()">⬇️ Save QR</button>
+        <button class="btn btn-teal btn-sm" onclick="nativeShare()">📤 Share</button>
+      </div>
+      <div class="qr-hint">Scan with any phone camera — opens straight into the story</div>
+      <div id="qr-share-note" style="display:none;margin-top:.6rem;font-size:.74rem;color:var(--teal);font-weight:700;line-height:1.4"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ═══════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════ */
+let STORIES = [];
+
+/* ═══════════════════════════════════════════════════════════════
+   INDEXEDDB STORAGE
+   ── Why? localStorage is limited to ~5 MB. One story with a few
+      photos (stored as base64) can easily exceed that, causing
+      saves to fail silently. IndexedDB handles 500 MB+ for free,
+      built into every modern browser — no Firebase needed.
+═══════════════════════════════════════════════════════════════ */
+const DB_NAME    = 'storyland-db';
+const DB_VERSION = 1;
+const STORE_NAME = 'stories';
+let _db = null;
+
+function openDB() {
+  return new Promise((resolve, reject) => {
+    if (_db) { resolve(_db); return; }
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = e => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+      }
+    };
+    req.onsuccess = e => { _db = e.target.result; resolve(_db); };
+    req.onerror   = e => reject(e.target.error);
+  });
+}
+
+async function loadFromDB() {
+  try {
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+      const tx   = db.transaction(STORE_NAME, 'readonly');
+      const req  = tx.objectStore(STORE_NAME).getAll();
+      req.onsuccess = e => resolve(e.target.result || []);
+      req.onerror   = e => reject(e.target.error);
+    });
+  } catch(e) {
+    console.error('IndexedDB load error:', e);
+    // Fallback: try legacy localStorage (migrate old data)
+    try { return JSON.parse(localStorage.getItem('aa-stories') || '[]'); }
+    catch(_) { return []; }
+  }
+}
+
+async function saveToDB(stories) {
+  try {
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+      const tx    = db.transaction(STORE_NAME, 'readwrite');
+      const store = tx.objectStore(STORE_NAME);
+      // Clear and rewrite all (simple approach, works for typical collection sizes)
+      store.clear();
+      stories.forEach(s => {
+        // Ensure every story has an id
+        if (!s.id) s.id = 'story_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+        store.put(s);
+      });
+      tx.oncomplete = () => resolve();
+      tx.onerror    = e  => reject(e.target.error);
+    });
+  } catch(e) {
+    console.error('IndexedDB save error:', e);
+    toast('⚠️ Storage error — could not save. Try freeing up browser storage.');
+    throw e;
+  }
+}
+
+/* ─ Export all stories to a downloadable JSON backup file ─ */
+function exportStories() {
+  if (!STORIES.length) { toast('⚠️ No stories to export yet!'); return; }
+  const blob = new Blob([JSON.stringify(STORIES, null, 2)], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = 'storyland-backup-' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('📦 Backup downloaded! Keep it safe.');
+}
+
+/* ─ Import stories from a JSON backup file ─ */
+function importStories() {
+  const input = document.createElement('input');
+  input.type = 'file'; input.accept = '.json,application/json';
+  input.onchange = async e => {
+    const f = e.target.files[0]; if (!f) return;
+    const reader = new FileReader();
+    reader.onload = async ev => {
+      try {
+        const imported = JSON.parse(ev.target.result);
+        if (!Array.isArray(imported)) throw new Error('Not a valid backup file');
+        // Merge: add stories not already present (by title)
+        const titles = new Set(STORIES.map(s => s.title));
+        const fresh  = imported.filter(s => !titles.has(s.title));
+        STORIES = [...STORIES, ...fresh];
+        await save();
+        renderGrid();
+        toast(`✅ Imported ${fresh.length} new stor${fresh.length===1?'y':'ies'}!`);
+      } catch(err) {
+        toast('⚠️ Invalid backup file — could not import');
+        console.error(err);
+      }
+    };
+    reader.readAsText(f);
+  };
+  input.click();
+}
+let editId = null;
+let storyType = 'comic';
+let pendingPanels = []; // [{dataUrl, caption}]
+let singleImgDataUrl = null;
+
+// Viewer state
+let viewStory    = null;
+let panelIdx     = 0;
+const synth      = window.speechSynthesis;
+let activeChipId = null; // which preset is currently speaking
+
+/* ═══════════════════════════════════════════════
+   STORYTELLER PRESETS
+   Each has: id, label, emoji, and tuning params
+   Voices are picked at speak-time from available browser voices
+═══════════════════════════════════════════════ */
+const STORYTELLERS = [
+  { id:'mama',        label:'Mama',        emoji:'👩',  rate:0.82, pitch:1.25, prefer:['female','woman','girl','zira','samantha','karen','moira','fiona','victoria','tessa'] },
+  { id:'papa',        label:'Papa',        emoji:'👨',  rate:0.80, pitch:0.88, prefer:['male','man','daniel','david','mark','alex','tom','george','rishi'] },
+  { id:'storyteller', label:'Storyteller', emoji:'📖',  rate:0.75, pitch:1.05, prefer:['female','woman','samantha','karen','moira','victoria','tessa'] },
+  { id:'grandma',     label:'Grandma',     emoji:'👵',  rate:0.70, pitch:1.15, prefer:['female','woman','fiona','moira','kate','serena'] },
+  { id:'fun',         label:'Fun Voice',   emoji:'🎉',  rate:0.95, pitch:1.40, prefer:['female','woman','girl','zira','samantha'] },
+];
+
+function pickVoice(prefer) {
+  const voices = synth.getVoices();
+  const en = voices.filter(v => v.lang.startsWith('en'));
+  const pool = en.length ? en : voices;
+  for (const kw of prefer) {
+    const found = pool.find(v => v.name.toLowerCase().includes(kw));
+    if (found) return found;
+  }
+  return pool[0] || voices[0] || null;
+}
+
+function getStoryText() {
+  if (!viewStory) return '';
+  if (viewStory.type === 'comic') {
+    // join all panel captions
+    return (viewStory.panels || []).map(p => p.caption || '').filter(Boolean).join('. ');
+  }
+  return viewStory.title + '. ' + (viewStory.content || '');
+}
+
+function speakAs(presetId) {
+  const preset = STORYTELLERS.find(p => p.id === presetId);
+  if (!preset) return;
+
+  // If same voice tapped again — stop
+  if (activeChipId === presetId) { stopSpeaking(); return; }
+
+  stopSpeaking();
+  const text = getStoryText();
+  if (!text.trim()) { toast('⚠️ No text to read in this story!'); return; }
+
+  activeChipId = presetId;
+  renderVoiceChips(); // show speaking state
+
+  const u = new SpeechSynthesisUtterance(text);
+  u.rate  = preset.rate;
+  u.pitch = preset.pitch;
+  const v = pickVoice(preset.prefer);
+  if (v) u.voice = v;
+  u.onend = () => { activeChipId = null; renderVoiceChips(); };
+  u.onerror = () => { activeChipId = null; renderVoiceChips(); };
+  synth.speak(u);
+}
+
+function stopSpeaking() {
+  synth?.cancel();
+  activeChipId = null;
+  renderVoiceChips();
+}
+
+function renderVoiceChips() {
+  ['vw-chips','vw-chips2'].forEach(id => {
+    const el = document.getElementById(id); if (!el) return;
+    let html = STORYTELLERS.map(p => {
+      const isSpeaking = activeChipId === p.id;
+      return `<button class="voice-chip${isSpeaking?' speaking':''}" onclick="speakAs('${p.id}')">${p.emoji} ${p.label}${isSpeaking?' 🔊':''}</button>`;
+    }).join('');
+    if (activeChipId) {
+      html += `<button class="vc-stop" onclick="stopSpeaking()">⏹ Stop</button>`;
+    }
+    el.innerHTML = html;
+  });
+}
+
+function stopChipAudio() { stopSpeaking(); stopVoice(); }
+
+/* ═══════════════════════════════════════════════
+   NARRATOR / RECORDING SYSTEM
+   PERSONS:    [{id, emoji, name}]
+   RECORDINGS: {personId_storySlug: dataUrl}
+   - Live mic recording via MediaRecorder
+   - MP3 / audio file uploads
+   - One recording per (person × story)
+═══════════════════════════════════════════════ */
+let PERSONS    = JSON.parse(localStorage.getItem('aa-persons')    || '[]');
+let RECORDINGS = JSON.parse(localStorage.getItem('aa-recordings') || '{}');
+let mediaRecorder = null;
+let recChunks     = [];
+let recPersonId   = null;
+let recStoryKey   = null;
+let playingAudio    = null;
+let playingPersonId = null;
+
+function savePersons()    { localStorage.setItem('aa-persons',    JSON.stringify(PERSONS)); }
+function saveRecordings() { localStorage.setItem('aa-recordings', JSON.stringify(RECORDINGS)); }
+
+/* Key is bound to the story TITLE (slug) so it follows the story even if reordered.
+   If no story is open we still allow recording — it goes under 'default'. */
+function recKey(personId) {
+  const slug = viewStory
+    ? viewStory.title.replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_]/g,'').slice(0,30)
+    : 'default';
+  return personId + '_' + (slug || 'default');
+}
+
+/* ── Open / close narrator manager ── */
+function openVPM() {
+  renderVpmList();
+  document.getElementById('vpm-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeVPM() {
+  // Stop any in-progress recording cleanly when modal closes
+  if (mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
+  document.getElementById('vpm-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+  renderPersonChips();
+}
+function handleVpmBg(e){ if (e.target === document.getElementById('vpm-overlay')) closeVPM(); }
+
+/* ── Add / remove narrator ── */
+function addPerson() {
+  const name  = document.getElementById('vpm-name-input').value.trim();
+  const emoji = document.getElementById('vpm-emoji').value.trim() || '👤';
+  if (!name) { toast('⚠️ Please enter a name!'); return; }
+  PERSONS.push({ id: 'p' + Date.now(), emoji, name });
+  savePersons();
+  document.getElementById('vpm-name-input').value = '';
+  document.getElementById('vpm-emoji').value = '👤';
+  renderVpmList();
+  renderPersonChips();
+  toast('🎉 ' + emoji + ' ' + name + ' added!');
+}
+
+function deletePerson(id) {
+  if (!confirm('Remove this narrator and all their recordings?')) return;
+  PERSONS = PERSONS.filter(p => p.id !== id);
+  Object.keys(RECORDINGS).filter(k => k.startsWith(id + '_')).forEach(k => delete RECORDINGS[k]);
+  savePersons(); saveRecordings();
+  renderVpmList(); renderPersonChips();
+  toast('🗑️ Narrator removed');
+}
+
+function deleteRec(key) {
+  delete RECORDINGS[key];
+  saveRecordings();
+  renderVpmList();
+  renderPersonChips();
+  toast('🗑️ Recording deleted');
+}
+
+/* ── Render narrator list inside manager modal ── */
+function renderVpmList() {
+  const el = document.getElementById('vpm-list');
+  if (!PERSONS.length) {
+    el.innerHTML = '<div class="vpm-empty">No narrators yet — add one above! 👆</div>';
+    return;
+  }
+  const currentSlug = viewStory
+    ? viewStory.title.replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_]/g,'').slice(0,30)
+    : 'default';
+
+  el.innerHTML = PERSONS.map(p => {
+    // All recordings for this person, with the current story marked
+    const recRows = Object.entries(RECORDINGS)
+      .filter(([k]) => k.startsWith(p.id + '_'))
+      .map(([k, url]) => {
+        const slug    = k.slice(p.id.length + 1);
+        const isHere  = slug === currentSlug;
+        const label   = slug.replace(/_/g,' ') || 'default';
+        return `<div style="display:flex;align-items:center;gap:.5rem">
+          <span style="font-size:.72rem;font-weight:800;color:${isHere?'var(--orange)':'var(--soft)'};min-width:70px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(label)}">${isHere?'▶ ':''}${esc(label)}</span>
+          <audio src="${url}" controls preload="none" style="flex:1;min-width:120px"></audio>
+          <button class="vpm-del" onclick="deleteRec('${k}')" title="Delete recording">✕</button>
+        </div>`;
+      }).join('');
+
+    return `<div class="vpm-item">
+      <div class="vpm-item-head">
+        <span style="font-size:1.3rem">${p.emoji}</span>
+        <span class="vpm-item-name">${esc(p.name)}</span>
+        <button class="vpm-rec-btn" id="rec-btn-${p.id}" onclick="startRec('${p.id}')">🎙️ Record</button>
+        <label class="vpm-upload-btn" title="Upload MP3 / audio file">
+          📁 Upload
+          <input type="file" accept="audio/*" style="display:none" onchange="uploadRec(event,'${p.id}')">
+        </label>
+        <button class="vpm-del" onclick="deletePerson('${p.id}')" title="Remove narrator">✕</button>
+      </div>
+      ${recRows ? `<div class="vpm-has-audio">${recRows}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+/* ── Live mic recording ── */
+async function startRec(personId) {
+  const btn = document.getElementById('rec-btn-' + personId);
+
+  // Toggle off if recording this same person
+  if (mediaRecorder && mediaRecorder.state === 'recording' && recPersonId === personId) {
+    mediaRecorder.stop();
+    return;
+  }
+  // Stop any other ongoing recording first
+  if (mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    recChunks   = [];
+    recPersonId = personId;
+    recStoryKey = recKey(personId);
+
+    mediaRecorder = new MediaRecorder(stream);
+    mediaRecorder.ondataavailable = e => { if (e.data.size) recChunks.push(e.data); };
+    mediaRecorder.onstop = () => {
+      stream.getTracks().forEach(t => t.stop());
+      const blob = new Blob(recChunks, { type: 'audio/webm' });
+      const reader = new FileReader();
+      reader.onload = ev => {
+        RECORDINGS[recStoryKey] = ev.target.result;
+        saveRecordings();
+        renderVpmList();
+        renderPersonChips();
+        const name = PERSONS.find(p => p.id === personId)?.name || 'narrator';
+        toast('✅ Recording saved for ' + name + '!');
+      };
+      reader.readAsDataURL(blob);
+      const b = document.getElementById('rec-btn-' + personId);
+      if (b) { b.classList.remove('recording'); b.textContent = '🎙️ Record'; }
+      recPersonId = null;
+    };
+
+    mediaRecorder.start();
+    if (btn) { btn.classList.add('recording'); btn.textContent = '⏹ Stop'; }
+    toast('🔴 Recording… tap Stop when done');
+  } catch (err) {
+    console.error(err);
+    toast('⚠️ Mic access denied — please allow microphone');
+  }
+}
+
+/* ── Upload MP3 / audio file ── */
+function uploadRec(e, personId) {
+  const f = e.target.files[0]; if (!f) return;
+  if (f.size > 15 * 1024 * 1024) {
+    toast('⚠️ File too big — please use audio under 15 MB');
+    e.target.value = ''; return;
+  }
+  const key = recKey(personId);
+  const reader = new FileReader();
+  reader.onload = ev => {
+    RECORDINGS[key] = ev.target.result;
+    saveRecordings();
+    renderVpmList();
+    renderPersonChips();
+    const name = PERSONS.find(p => p.id === personId)?.name || 'narrator';
+    toast('📁 Audio uploaded for ' + name + '!');
+  };
+  reader.onerror = () => toast('⚠️ Could not read that file');
+  reader.readAsDataURL(f);
+  e.target.value = '';
+}
+
+/* ── Render narrator chips in the story viewer ── */
+function renderPersonChips() {
+  ['vw-persons','vw-persons2'].forEach(id => {
+    const el = document.getElementById(id); if (!el) return;
+    if (!PERSONS.length) {
+      el.innerHTML = '<span style="font-size:.78rem;color:var(--soft);font-style:italic">No narrators yet — tap <strong>+ Manage</strong> to add one and record your voice</span>';
+      return;
+    }
+    let chips = PERSONS.map(p => {
+      const key       = recKey(p.id);
+      const hasRec    = !!RECORDINGS[key];
+      const isPlaying = playingPersonId === p.id;
+      let cls = 'person-chip';
+      if (hasRec)    cls += ' has-rec';
+      if (isPlaying) cls += ' playing';
+      const label = isPlaying
+        ? `${p.emoji} ${p.name} 🔊`
+        : `${p.emoji} ${p.name}${hasRec ? ' ▶' : ' +'}`;
+      const title = hasRec
+        ? 'Play recording for this story'
+        : 'No recording for this story yet — tap + Manage to record';
+      return `<button class="${cls}" onclick="playPerson('${p.id}')" title="${title}">${label}</button>`;
+    }).join('');
+    if (playingPersonId) {
+      chips += `<button class="vc-stop" onclick="stopVoice()">⏹ Stop</button>`;
+    }
+    el.innerHTML = chips;
+  });
+}
+
+function playPerson(personId) {
+  const key = recKey(personId);
+  const url = RECORDINGS[key];
+  if (!url) {
+    toast('No recording for this story yet — tap + Manage to add one');
+    return;
+  }
+  stopVoice();
+  stopSpeaking(); // also stop AI voice if running
+  playingPersonId = personId;
+  renderPersonChips();
+  playingAudio = new Audio(url);
+  playingAudio.play().catch(err => {
+    console.error(err);
+    toast('⚠️ Could not play audio');
+    playingPersonId = null;
+    renderPersonChips();
+  });
+  playingAudio.onended = () => {
+    playingPersonId = null;
+    playingAudio = null;
+    renderPersonChips();
+  };
+}
+
+function stopVoice() {
+  if (playingAudio) { playingAudio.pause(); playingAudio = null; }
+  playingPersonId = null;
+  renderPersonChips();
+}
+
+async function save() {
+  await saveToDB(STORIES);
+  updateStorageIndicator();
+}
+
+/* ═══════════════════════════════════════════════
+   RENDER GRID
+═══════════════════════════════════════════════ */
+function renderGrid() {
+  const grid = document.getElementById('story-grid');
+  document.getElementById('story-count-label').textContent =
+    STORIES.length === 0 ? 'Stories' : `${STORIES.length} Stor${STORIES.length===1?'y':'ies'}`;
+
+  if (STORIES.length === 0) {
+    grid.innerHTML = `<div class="empty-state">
+      <div class="big">📖</div>
+      <p>No stories yet!<br>Click <strong>➕ Add Story</strong> to upload your first Advi &amp; Avi adventure.</p>
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = STORIES.map((s, i) => {
+    const thumb = s.type === 'comic'
+      ? (s.panels?.[0]?.dataUrl || '')
+      : (s.image || '');
+    return `<div class="card" onclick="openViewer(${i})">
+      <div class="card-img">
+        ${thumb ? `<img src="${thumb}" alt="${esc(s.title)}" loading="lazy">` : `<div style="height:100%;display:flex;align-items:center;justify-content:center;font-size:3rem">📖</div>`}
+        <div class="card-img-overlay"></div>
+        <span class="card-badge">📖 ${s.panels ? s.panels.length+' panels' : '1 image'}</span>
+        <span class="card-type">${s.type==='comic'?'🎨 Comic':'🖼️ Image'}</span>
+        <div class="card-qr" data-idx="${i}" title="Scan or tap to share '${esc(s.title)}'" onclick="event.stopPropagation();openQRForStory(${i})">
+          <canvas id="card-qr-${i}"></canvas>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="card-title">${esc(s.title)}</div>
+        <div class="card-preview">${esc(s.preview||'')}</div>
+        <div class="card-footer">
+          <div class="card-read">Read story <span>→</span></div>
+          <div class="card-actions">
+            <button class="card-action-btn" title="Print" onclick="event.stopPropagation();printStory(${i})">🖨️</button>
+            <button class="card-action-btn" title="Edit" onclick="event.stopPropagation();editStory(${i})">✏️</button>
+            <button class="card-action-btn" title="Delete" onclick="event.stopPropagation();deleteStory(${i})">🗑️</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Draw mini QR codes on each card (after innerHTML is parsed)
+  renderCardQRs();
+}
+
+/* Draw the mini QR code on every story card */
+function renderCardQRs() {
+  STORIES.forEach((s, i) => {
+    const canvas = document.getElementById('card-qr-' + i);
+    if (!canvas) return;
+    const url = buildStoryShareUrl(s);
+    try { QR.render(canvas, url, 6); }
+    catch(e) { console.error('QR render failed for card', i, e); }
+  });
+}
+
+/* Open the big QR modal for a specific story by index */
+function openQRForStory(idx) {
+  const s = STORIES[idx];
+  if (!s) return;
+  viewStory = s; // so buildShareUrl/openQR pick up the right story
+  openQR(true);
+}
+
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+/* ═══════════════════════════════════════════════
+   VIEWER
+═══════════════════════════════════════════════ */
+function openViewer(idx) {
+  viewStory = STORIES[idx];
+  panelIdx  = 0;
+  stopSpeaking();
+
+  document.getElementById('vw-title').textContent = viewStory.title;
+
+  if (viewStory.type === 'comic' && viewStory.panels?.length > 0) {
+    document.getElementById('vw-panels-area').style.display = '';
+    document.getElementById('vw-single-area').style.display = 'none';
+    buildDots();
+    renderPanel();
+  } else {
+    document.getElementById('vw-panels-area').style.display = 'none';
+    document.getElementById('vw-single-area').style.display = '';
+    document.getElementById('vw-single-img').src = viewStory.image || '';
+    const content = (viewStory.content || '').split(/\n\n+/).map(p=>`<p>${p}</p>`).join('');
+    document.getElementById('vw-single-content').innerHTML = content;
+  }
+
+  renderVoiceChips();
+  renderPersonChips();
+  document.getElementById('viewer-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeViewer() {
+  stopChipAudio();
+  document.getElementById('viewer-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function handleViewerBg(e){ if(e.target===document.getElementById('viewer-overlay')) closeViewer(); }
+
+function buildDots() {
+  const dotsEl = document.getElementById('vw-dots');
+  dotsEl.innerHTML = '';
+  (viewStory.panels||[]).forEach((_,i)=>{
+    const d = document.createElement('button');
+    d.className = 'vdot' + (i===0?' on':'');
+    d.onclick = ()=>{ panelIdx=i; renderPanel(); };
+    dotsEl.appendChild(d);
+  });
+}
+
+function renderPanel() {
+  const panel = viewStory.panels[panelIdx];
+  const img = document.getElementById('vw-panel-img');
+  img.classList.add('fade');
+  setTimeout(()=>{
+    if (panel.dataUrl) {
+      img.src = panel.dataUrl;
+      img.style.display = '';
+    } else {
+      // Placeholder panel from QR scan — show emoji stand-in
+      img.src = '';
+      img.style.display = 'none';
+    }
+    img.classList.remove('fade');
+  }, 120);
+  const cap = document.getElementById('vw-caption');
+  if (panel.caption) { cap.textContent = panel.caption; cap.classList.remove('hidden'); }
+  else if (panel._placeholder) { cap.textContent = '(Panel ' + (panelIdx+1) + ' — image not included in QR)'; cap.classList.remove('hidden'); }
+  else cap.classList.add('hidden');
+  document.getElementById('vw-counter').textContent = `${panelIdx+1} / ${viewStory.panels.length}`;
+  document.getElementById('vw-prev').disabled = panelIdx === 0;
+  document.getElementById('vw-next').disabled = panelIdx === viewStory.panels.length - 1;
+  document.querySelectorAll('.vdot').forEach((d,i)=>d.classList.toggle('on',i===panelIdx));
+}
+
+function panelStep(dir) {
+  const next = panelIdx + dir;
+  if (next < 0 || next >= viewStory.panels.length) return;
+  panelIdx = next; renderPanel();
+}
+
+
+
+document.addEventListener('keydown', e=>{
+  if (e.key==='Escape'){ closeViewer(); closeAdd(); }
+  if (document.getElementById('viewer-overlay').classList.contains('open')) {
+    if (e.key==='ArrowRight') panelStep(1);
+    if (e.key==='ArrowLeft')  panelStep(-1);
+  }
+});
+
+/* ═══════════════════════════════════════════════
+   PRINT — SINGLE STORY
+═══════════════════════════════════════════════ */
+function printCurrentStory() {
+  if (!viewStory) return;
+  const idx = STORIES.indexOf(viewStory);
+  closeViewer();
+  setTimeout(()=>printStory(idx), 200);
+}
+
+function printStory(idx) {
+  const s = STORIES[idx];
+  // hide booklet
+  document.getElementById('print-booklet').innerHTML = '';
+  // build single print page
+  const el = document.getElementById('print-single');
+  el.innerHTML = buildSinglePrintHTML(s);
+  window.print();
+}
+
+function buildSinglePrintHTML(s) {
+  if (s.type === 'comic' && s.panels?.length > 0) {
+    return s.panels.map(p =>
+      `<div class="ps-panel-page"><img src="${p.dataUrl}" alt=""></div>`
+    ).join('');
+  } else {
+    return s.image ? `<div class="ps-panel-page"><img src="${s.image}" alt=""></div>` : '';
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   PRINT — BOOKLET (ALL STORIES)
+═══════════════════════════════════════════════ */
+function openBookletPrint() {
+  if (STORIES.length === 0) { toast('⚠️ No stories to print yet!'); return; }
+  document.getElementById('print-single').innerHTML = '';
+  const el = document.getElementById('print-booklet');
+  el.innerHTML = STORIES.map(s => {
+    if (s.type === 'comic' && s.panels?.length > 0) {
+      return s.panels.map(p =>
+        `<div class="ps-panel-page"><img src="${p.dataUrl}" alt=""></div>`
+      ).join('');
+    } else {
+      return s.image ? `<div class="ps-panel-page"><img src="${s.image}" alt=""></div>` : '';
+    }
+  }).join('');
+  window.print();
+}
+
+/* ═══════════════════════════════════════════════
+   ADD / EDIT MODAL
+═══════════════════════════════════════════════ */
+function openAdd() {
+  editId = null;
+  resetForm();
+  renderMgrList();
+  document.getElementById('add-modal-title').textContent = '➕ Add New Story';
+  document.getElementById('add-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeAdd() {
+  document.getElementById('add-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function handleAddBg(e){ if(e.target===document.getElementById('add-overlay')) closeAdd(); }
+
+function setType(t) {
+  storyType = t;
+  document.getElementById('t-comic').classList.toggle('on', t==='comic');
+  document.getElementById('t-single').classList.toggle('on', t==='single');
+  document.getElementById('comic-fields').style.display  = t==='comic'  ? '' : 'none';
+  document.getElementById('single-fields').style.display = t==='single' ? '' : 'none';
+}
+
+/* ── Image compression helper: resizes to max 900px wide, JPEG quality 0.75 ──
+   This keeps each image under ~200 KB instead of the raw 5–10 MB from camera,
+   which is why stories were failing to save (localStorage 5 MB limit). ── */
+function compressImage(file, maxDim, quality) {
+  maxDim  = maxDim  || 900;
+  quality = quality || 0.75;
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        if (w > maxDim || h > maxDim) {
+          if (w > h) { h = Math.round(h * maxDim / w); w = maxDim; }
+          else       { w = Math.round(w * maxDim / h); h = maxDim; }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+/* add panel images */
+async function addPanels(e) {
+  const files = [...e.target.files];
+  if (!files.length) return;
+  toast('⏳ Compressing images…');
+  const compressed = await Promise.all(files.map(f => compressImage(f)));
+  const incoming = compressed.map(dataUrl => ({ dataUrl, caption: '' }));
+  pendingPanels = [...pendingPanels, ...incoming];
+  renderPanelList();
+  e.target.value = '';
+}
+
+function renderPanelList() {
+  document.getElementById('panels-list').innerHTML = pendingPanels.map((p,i) => `
+    <div class="panel-row">
+      <img class="panel-thumb" src="${p.dataUrl}" alt="Panel ${i+1}">
+      <input class="panel-cap" type="text" placeholder="Caption for panel ${i+1}…"
+        value="${esc(p.caption)}" oninput="pendingPanels[${i}].caption=this.value">
+      <button class="panel-del" onclick="removePanel(${i})">✕</button>
+    </div>`).join('');
+}
+
+function removePanel(i) { pendingPanels.splice(i,1); renderPanelList(); }
+
+/* single image */
+async function setSingleImg(e) {
+  const f = e.target.files[0]; if(!f) return;
+  toast('⏳ Compressing image…');
+  singleImgDataUrl = await compressImage(f, 1200, 0.80);
+  const img = document.getElementById('single-preview');
+  img.src = singleImgDataUrl; img.classList.add('show');
+}
+
+/* save */
+async function saveStory() {
+  const title   = document.getElementById('f-title').value.trim();
+  const preview = document.getElementById('f-preview').value.trim();
+  if (!title) { toast('⚠️ Please add a title!'); return; }
+
+  let story = { title, preview, type: storyType, featured: document.getElementById('f-featured').checked };
+
+  if (storyType === 'comic') {
+    if (!pendingPanels.length) { toast('⚠️ Please upload at least one panel image!'); return; }
+    story.panels = pendingPanels.map(p=>({dataUrl:p.dataUrl, caption:p.caption||''}));
+  } else {
+    if (!singleImgDataUrl) { toast('⚠️ Please upload an image!'); return; }
+    story.image   = singleImgDataUrl;
+    story.content = document.getElementById('f-content').value.trim();
+  }
+
+  // Assign a stable id if new
+  if (editId !== null) {
+    story.id = STORIES[editId].id || ('story_' + Date.now());
+    STORIES[editId] = story;
+    toast('✅ Story updated!');
+  } else {
+    story.id = 'story_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+    STORIES.push(story);
+    toast('🎉 Story added!');
+  }
+  await save();
+  resetForm();
+  closeAdd();
+  renderGrid();
+  renderMgrList();
+  editId = null;
+  document.getElementById('add-modal-title').textContent = '➕ Add New Story';
+}
+
+function editStory(i) {
+  const s = STORIES[i];
+  editId = i;
+  document.getElementById('add-modal-title').textContent = '✏️ Edit Story';
+  document.getElementById('f-title').value   = s.title;
+  document.getElementById('f-preview').value = s.preview||'';
+  document.getElementById('f-featured').checked = !!s.featured;
+  setType(s.type||'comic');
+  if (s.type==='comic') {
+    pendingPanels = (s.panels||[]).map(p=>({dataUrl:p.dataUrl,caption:p.caption||''}));
+    renderPanelList();
+  } else {
+    singleImgDataUrl = s.image||null;
+    if (s.image) { const img=document.getElementById('single-preview'); img.src=s.image; img.classList.add('show'); }
+    document.getElementById('f-content').value = s.content||'';
+  }
+  document.getElementById('add-overlay').classList.add('open');
+  document.body.style.overflow='hidden';
+  window.scrollTo(0,0);
+}
+
+async function deleteStory(i) {
+  if (!confirm(`Delete "${STORIES[i].title}"?`)) return;
+  STORIES.splice(i,1);
+  await save(); renderGrid(); renderMgrList();
+  toast('🗑️ Story deleted');
+}
+
+function resetForm() {
+  storyType = 'comic'; pendingPanels = []; singleImgDataUrl = null; editId = null;
+  document.getElementById('f-title').value = '';
+  document.getElementById('f-preview').value = '';
+  document.getElementById('f-featured').checked = false;
+  document.getElementById('f-content').value = '';
+  document.getElementById('panels-list').innerHTML = '';
+  document.getElementById('panels-input').value = '';
+  document.getElementById('single-input').value = '';
+  const sp = document.getElementById('single-preview'); sp.src=''; sp.classList.remove('show');
+  setType('comic');
+}
+
+function renderMgrList() {
+  const el = document.getElementById('mgr-list');
+  if (!STORIES.length) { el.innerHTML='<div style="color:var(--soft);font-size:.85rem;text-align:center;padding:.8rem">No stories yet</div>'; return; }
+  el.innerHTML = STORIES.map((s,i) => {
+    const thumb = s.type==='comic' ? (s.panels?.[0]?.dataUrl||'') : (s.image||'');
+    return `<div class="mgr-item">
+      ${thumb ? `<img class="mgr-thumb" src="${thumb}" alt="">` : `<div class="mgr-thumb">📖</div>`}
+      <div class="mgr-info">
+        <div class="mgr-ttl">${esc(s.title)}</div>
+        <div class="mgr-sub">${s.type==='comic'?`🎨 ${(s.panels||[]).length} panels`:'🖼️ Single image'}</div>
+      </div>
+      <div class="mgr-btns">
+        <button class="btn btn-sm btn-outline" onclick="editStory(${i})">✏️</button>
+        <button class="btn btn-sm" style="background:#ff4444;color:#fff" onclick="deleteStory(${i})">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ═══════════════════════════════════════════════
+   DARK MODE
+═══════════════════════════════════════════════ */
+function toggleTheme(){
+  const dark = document.documentElement.dataset.theme==='dark';
+  document.documentElement.dataset.theme = dark?'':'dark';
+  document.getElementById('theme-btn').textContent = dark?'🌙':'☀️';
+  localStorage.setItem('aa-theme', dark?'':'dark');
+  applyTheme(dark?'':'dark');
+}
+function applyTheme(t){
+  const r = document.documentElement.style;
+  if(t==='dark'){
+    r.setProperty('--bg','#1a1209'); r.setProperty('--card','#231809');
+    r.setProperty('--ink','#f5e8d5'); r.setProperty('--border','#3a2a14');
+    r.setProperty('--soft','rgba(245,232,213,.55)');
+  } else {
+    r.setProperty('--bg','#FFF8EE'); r.setProperty('--card','#fff');
+    r.setProperty('--ink','#2C1A10'); r.setProperty('--border','#F3E8D0');
+    r.setProperty('--soft','rgba(44,26,16,.55)');
+  }
+}
+(function(){
+  const t=localStorage.getItem('aa-theme')||'';
+  if(t){ document.documentElement.dataset.theme=t; applyTheme(t); if(t==='dark') document.getElementById('theme-btn').textContent='☀️'; }
+})();
+
+/* ═══════════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════════ */
+let _tt;
+function toast(msg){ const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show'); clearTimeout(_tt); _tt=setTimeout(()=>el.classList.remove('show'),2600); }
+
+/* ═══════════════════════════════════════════════
+   QR CODE GENERATOR
+   Library: qrcode-generator by Kazuhiko Arase
+   https://github.com/kazuhikoarase/qrcode-generator
+   MIT License — Copyright (c) 2009 Kazuhiko Arase
+═══════════════════════════════════════════════ */
+var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],f={},c=function(t,r){o=function(t){for(var r=new Array(t),e=0;e<t;e+=1){r[e]=new Array(t);for(var n=0;n<t;n+=1)r[e][n]=null}return r}(i=4*e+17),l(0,0),l(i-7,0),l(0,i-7),s(),h(),d(t,r),e>=7&&v(t),null==a&&(a=p(e,n,u)),w(a,r)},l=function(t,r){for(var e=-1;e<=7;e+=1)if(!(t+e<=-1||i<=t+e))for(var n=-1;n<=7;n+=1)r+n<=-1||i<=r+n||(o[t+e][r+n]=0<=e&&e<=6&&(0==n||6==n)||0<=n&&n<=6&&(0==e||6==e)||2<=e&&e<=4&&2<=n&&n<=4)},h=function(){for(var t=8;t<i-8;t+=1)null==o[t][6]&&(o[t][6]=t%2==0);for(var r=8;r<i-8;r+=1)null==o[6][r]&&(o[6][r]=r%2==0)},s=function(){for(var t=B.getPatternPosition(e),r=0;r<t.length;r+=1)for(var n=0;n<t.length;n+=1){var i=t[r],a=t[n];if(null==o[i][a])for(var u=-2;u<=2;u+=1)for(var f=-2;f<=2;f+=1)o[i+u][a+f]=-2==u||2==u||-2==f||2==f||0==u&&0==f}},v=function(t){for(var r=B.getBCHTypeNumber(e),n=0;n<18;n+=1){var a=!t&&1==(r>>n&1);o[Math.floor(n/3)][n%3+i-8-3]=a}for(n=0;n<18;n+=1){a=!t&&1==(r>>n&1);o[n%3+i-8-3][Math.floor(n/3)]=a}},d=function(t,r){for(var e=n<<3|r,a=B.getBCHTypeInfo(e),u=0;u<15;u+=1){var f=!t&&1==(a>>u&1);u<6?o[u][8]=f:u<8?o[u+1][8]=f:o[i-15+u][8]=f}for(u=0;u<15;u+=1){f=!t&&1==(a>>u&1);u<8?o[8][i-u-1]=f:u<9?o[8][15-u-1+1]=f:o[8][15-u-1]=f}o[i-8][8]=!t},w=function(t,r){for(var e=-1,n=i-1,a=7,u=0,f=B.getMaskFunction(r),c=i-1;c>0;c-=2)for(6==c&&(c-=1);;){for(var g=0;g<2;g+=1)if(null==o[n][c-g]){var l=!1;u<t.length&&(l=1==(t[u]>>>a&1)),f(n,c-g)&&(l=!l),o[n][c-g]=l,-1==(a-=1)&&(u+=1,a=7)}if((n+=e)<0||i<=n){n-=e,e=-e;break}}},p=function(t,r,e){for(var n=A.getRSBlocks(t,r),o=b(),i=0;i<e.length;i+=1){var a=e[i];o.put(a.getMode(),4),o.put(a.getLength(),B.getLengthInBits(a.getMode(),t)),a.write(o)}var u=0;for(i=0;i<n.length;i+=1)u+=n[i].dataCount;if(o.getLengthInBits()>8*u)throw"code length overflow. ("+o.getLengthInBits()+">"+8*u+")";for(o.getLengthInBits()+4<=8*u&&o.put(0,4);o.getLengthInBits()%8!=0;)o.putBit(!1);for(;!(o.getLengthInBits()>=8*u||(o.put(236,8),o.getLengthInBits()>=8*u));)o.put(17,8);return function(t,r){for(var e=0,n=0,o=0,i=new Array(r.length),a=new Array(r.length),u=0;u<r.length;u+=1){var f=r[u].dataCount,c=r[u].totalCount-f;n=Math.max(n,f),o=Math.max(o,c),i[u]=new Array(f);for(var g=0;g<i[u].length;g+=1)i[u][g]=255&t.getBuffer()[g+e];e+=f;var l=B.getErrorCorrectPolynomial(c),h=k(i[u],l.getLength()-1).mod(l);for(a[u]=new Array(l.getLength()-1),g=0;g<a[u].length;g+=1){var s=g+h.getLength()-a[u].length;a[u][g]=s>=0?h.getAt(s):0}}var v=0;for(g=0;g<r.length;g+=1)v+=r[g].totalCount;var d=new Array(v),w=0;for(g=0;g<n;g+=1)for(u=0;u<r.length;u+=1)g<i[u].length&&(d[w]=i[u][g],w+=1);for(g=0;g<o;g+=1)for(u=0;u<r.length;u+=1)g<a[u].length&&(d[w]=a[u][g],w+=1);return d}(o,n)};f.addData=function(t,r){var e=null;switch(r=r||"Byte"){case"Numeric":e=M(t);break;case"Alphanumeric":e=x(t);break;case"Byte":e=m(t);break;case"Kanji":e=L(t);break;default:throw"mode:"+r}u.push(e),a=null},f.isDark=function(t,r){if(t<0||i<=t||r<0||i<=r)throw t+","+r;return o[t][r]},f.getModuleCount=function(){return i},f.make=function(){if(e<1){for(var t=1;t<40;t++){for(var r=A.getRSBlocks(t,n),o=b(),i=0;i<u.length;i++){var a=u[i];o.put(a.getMode(),4),o.put(a.getLength(),B.getLengthInBits(a.getMode(),t)),a.write(o)}var g=0;for(i=0;i<r.length;i++)g+=r[i].dataCount;if(o.getLengthInBits()<=8*g)break}e=t}c(!1,function(){for(var t=0,r=0,e=0;e<8;e+=1){c(!0,e);var n=B.getLostPoint(f);(0==e||t>n)&&(t=n,r=e)}return r}())},f.createTableTag=function(t,r){t=t||2;var e="";e+='<table style="',e+=" border-width: 0px; border-style: none;",e+=" border-collapse: collapse;",e+=" padding: 0px; margin: "+(r=void 0===r?4*t:r)+"px;",e+='">',e+="<tbody>";for(var n=0;n<f.getModuleCount();n+=1){e+="<tr>";for(var o=0;o<f.getModuleCount();o+=1)e+='<td style="',e+=" border-width: 0px; border-style: none;",e+=" border-collapse: collapse;",e+=" padding: 0px; margin: 0px;",e+=" width: "+t+"px;",e+=" height: "+t+"px;",e+=" background-color: ",e+=f.isDark(n,o)?"#000000":"#ffffff",e+=";",e+='"/>';e+="</tr>"}return e+="</tbody>",e+="</table>"},f.createSvgTag=function(t,r,e,n){var o={};"object"==typeof arguments[0]&&(t=(o=arguments[0]).cellSize,r=o.margin,e=o.alt,n=o.title),t=t||2,r=void 0===r?4*t:r,(e="string"==typeof e?{text:e}:e||{}).text=e.text||null,e.id=e.text?e.id||"qrcode-description":null,(n="string"==typeof n?{text:n}:n||{}).text=n.text||null,n.id=n.text?n.id||"qrcode-title":null;var i,a,u,c,g=f.getModuleCount()*t+2*r,l="";for(c="l"+t+",0 0,"+t+" -"+t+",0 0,-"+t+"z ",l+='<svg version="1.1" xmlns="http://www.w3.org/2000/svg"',l+=o.scalable?"":' width="'+g+'px" height="'+g+'px"',l+=' viewBox="0 0 '+g+" "+g+'" ',l+=' preserveAspectRatio="xMinYMin meet"',l+=n.text||e.text?' role="img" aria-labelledby="'+y([n.id,e.id].join(" ").trim())+'"':"",l+=">",l+=n.text?'<title id="'+y(n.id)+'">'+y(n.text)+"</title>":"",l+=e.text?'<description id="'+y(e.id)+'">'+y(e.text)+"</description>":"",l+='<rect width="100%" height="100%" fill="white" cx="0" cy="0"/>',l+='<path d="',a=0;a<f.getModuleCount();a+=1)for(u=a*t+r,i=0;i<f.getModuleCount();i+=1)f.isDark(a,i)&&(l+="M"+(i*t+r)+","+u+c);return l+='" stroke="transparent" fill="black"/>',l+="</svg>"},f.createDataURL=function(t,r){t=t||2,r=void 0===r?4*t:r;var e=f.getModuleCount()*t+2*r,n=r,o=e-r;return I(e,e,function(r,e){if(n<=r&&r<o&&n<=e&&e<o){var i=Math.floor((r-n)/t),a=Math.floor((e-n)/t);return f.isDark(a,i)?0:1}return 1})},f.createImgTag=function(t,r,e){t=t||2,r=void 0===r?4*t:r;var n=f.getModuleCount()*t+2*r,o="";return o+="<img",o+=' src="',o+=f.createDataURL(t,r),o+='"',o+=' width="',o+=n,o+='"',o+=' height="',o+=n,o+='"',e&&(o+=' alt="',o+=y(e),o+='"'),o+="/>"};var y=function(t){for(var r="",e=0;e<t.length;e+=1){var n=t.charAt(e);switch(n){case"<":r+="&lt;";break;case">":r+="&gt;";break;case"&":r+="&amp;";break;case'"':r+="&quot;";break;default:r+=n}}return r};return f.createASCII=function(t,r){if((t=t||1)<2)return function(t){t=void 0===t?2:t;var r,e,n,o,i,a=1*f.getModuleCount()+2*t,u=t,c=a-t,g={"██":"█","█ ":"▀"," █":"▄","  ":" "},l={"██":"▀","█ ":"▀"," █":" ","  ":" "},h="";for(r=0;r<a;r+=2){for(n=Math.floor((r-u)/1),o=Math.floor((r+1-u)/1),e=0;e<a;e+=1)i="█",u<=e&&e<c&&u<=r&&r<c&&f.isDark(n,Math.floor((e-u)/1))&&(i=" "),u<=e&&e<c&&u<=r+1&&r+1<c&&f.isDark(o,Math.floor((e-u)/1))?i+=" ":i+="█",h+=t<1&&r+1>=c?l[i]:g[i];h+="\n"}return a%2&&t>0?h.substring(0,h.length-a-1)+Array(a+1).join("▀"):h.substring(0,h.length-1)}(r);t-=1,r=void 0===r?2*t:r;var e,n,o,i,a=f.getModuleCount()*t+2*r,u=r,c=a-r,g=Array(t+1).join("██"),l=Array(t+1).join("  "),h="",s="";for(e=0;e<a;e+=1){for(o=Math.floor((e-u)/t),s="",n=0;n<a;n+=1)i=1,u<=n&&n<c&&u<=e&&e<c&&f.isDark(o,Math.floor((n-u)/t))&&(i=0),s+=i?g:l;for(o=0;o<t;o+=1)h+=s+"\n"}return h.substring(0,h.length-1)},f.renderTo2dContext=function(t,r){r=r||2;for(var e=f.getModuleCount(),n=0;n<e;n++)for(var o=0;o<e;o++)t.fillStyle=f.isDark(n,o)?"black":"white",t.fillRect(n*r,o*r,r,r)},f};t.stringToBytes=(t.stringToBytesFuncs={default:function(t){for(var r=[],e=0;e<t.length;e+=1){var n=t.charCodeAt(e);r.push(255&n)}return r}}).default,t.createStringToBytes=function(t,r){var e=function(){for(var e=S(t),n=function(){var t=e.read();if(-1==t)throw"eof";return t},o=0,i={};;){var a=e.read();if(-1==a)break;var u=n(),f=n()<<8|n();i[String.fromCharCode(a<<8|u)]=f,o+=1}if(o!=r)throw o+" != "+r;return i}(),n="?".charCodeAt(0);return function(t){for(var r=[],o=0;o<t.length;o+=1){var i=t.charCodeAt(o);if(i<128)r.push(i);else{var a=e[t.charAt(o)];"number"==typeof a?(255&a)==a?r.push(a):(r.push(a>>>8),r.push(255&a)):r.push(n)}}return r}};var r,e,n,o,i,a=1,u=2,f=4,c=8,g={L:1,M:0,Q:3,H:2},l=0,h=1,s=2,v=3,d=4,w=5,p=6,y=7,B=(r=[[],[6,18],[6,22],[6,26],[6,30],[6,34],[6,22,38],[6,24,42],[6,26,46],[6,28,50],[6,30,54],[6,32,58],[6,34,62],[6,26,46,66],[6,26,48,70],[6,26,50,74],[6,30,54,78],[6,30,56,82],[6,30,58,86],[6,34,62,90],[6,28,50,72,94],[6,26,50,74,98],[6,30,54,78,102],[6,28,54,80,106],[6,32,58,84,110],[6,30,58,86,114],[6,34,62,90,118],[6,26,50,74,98,122],[6,30,54,78,102,126],[6,26,52,78,104,130],[6,30,56,82,108,134],[6,34,60,86,112,138],[6,30,58,86,114,142],[6,34,62,90,118,146],[6,30,54,78,102,126,150],[6,24,50,76,102,128,154],[6,28,54,80,106,132,158],[6,32,58,84,110,136,162],[6,26,54,82,110,138,166],[6,30,58,86,114,142,170]],e=1335,n=7973,i=function(t){for(var r=0;0!=t;)r+=1,t>>>=1;return r},(o={}).getBCHTypeInfo=function(t){for(var r=t<<10;i(r)-i(e)>=0;)r^=e<<i(r)-i(e);return 21522^(t<<10|r)},o.getBCHTypeNumber=function(t){for(var r=t<<12;i(r)-i(n)>=0;)r^=n<<i(r)-i(n);return t<<12|r},o.getPatternPosition=function(t){return r[t-1]},o.getMaskFunction=function(t){switch(t){case l:return function(t,r){return(t+r)%2==0};case h:return function(t,r){return t%2==0};case s:return function(t,r){return r%3==0};case v:return function(t,r){return(t+r)%3==0};case d:return function(t,r){return(Math.floor(t/2)+Math.floor(r/3))%2==0};case w:return function(t,r){return t*r%2+t*r%3==0};case p:return function(t,r){return(t*r%2+t*r%3)%2==0};case y:return function(t,r){return(t*r%3+(t+r)%2)%2==0};default:throw"bad maskPattern:"+t}},o.getErrorCorrectPolynomial=function(t){for(var r=k([1],0),e=0;e<t;e+=1)r=r.multiply(k([1,C.gexp(e)],0));return r},o.getLengthInBits=function(t,r){if(1<=r&&r<10)switch(t){case a:return 10;case u:return 9;case f:case c:return 8;default:throw"mode:"+t}else if(r<27)switch(t){case a:return 12;case u:return 11;case f:return 16;case c:return 10;default:throw"mode:"+t}else{if(!(r<41))throw"type:"+r;switch(t){case a:return 14;case u:return 13;case f:return 16;case c:return 12;default:throw"mode:"+t}}},o.getLostPoint=function(t){for(var r=t.getModuleCount(),e=0,n=0;n<r;n+=1)for(var o=0;o<r;o+=1){for(var i=0,a=t.isDark(n,o),u=-1;u<=1;u+=1)if(!(n+u<0||r<=n+u))for(var f=-1;f<=1;f+=1)o+f<0||r<=o+f||0==u&&0==f||a==t.isDark(n+u,o+f)&&(i+=1);i>5&&(e+=3+i-5)}for(n=0;n<r-1;n+=1)for(o=0;o<r-1;o+=1){var c=0;t.isDark(n,o)&&(c+=1),t.isDark(n+1,o)&&(c+=1),t.isDark(n,o+1)&&(c+=1),t.isDark(n+1,o+1)&&(c+=1),0!=c&&4!=c||(e+=3)}for(n=0;n<r;n+=1)for(o=0;o<r-6;o+=1)t.isDark(n,o)&&!t.isDark(n,o+1)&&t.isDark(n,o+2)&&t.isDark(n,o+3)&&t.isDark(n,o+4)&&!t.isDark(n,o+5)&&t.isDark(n,o+6)&&(e+=40);for(o=0;o<r;o+=1)for(n=0;n<r-6;n+=1)t.isDark(n,o)&&!t.isDark(n+1,o)&&t.isDark(n+2,o)&&t.isDark(n+3,o)&&t.isDark(n+4,o)&&!t.isDark(n+5,o)&&t.isDark(n+6,o)&&(e+=40);var g=0;for(o=0;o<r;o+=1)for(n=0;n<r;n+=1)t.isDark(n,o)&&(g+=1);return e+=Math.abs(100*g/r/r-50)/5*10},o),C=function(){for(var t=new Array(256),r=new Array(256),e=0;e<8;e+=1)t[e]=1<<e;for(e=8;e<256;e+=1)t[e]=t[e-4]^t[e-5]^t[e-6]^t[e-8];for(e=0;e<255;e+=1)r[t[e]]=e;var n={glog:function(t){if(t<1)throw"glog("+t+")";return r[t]},gexp:function(r){for(;r<0;)r+=255;for(;r>=256;)r-=255;return t[r]}};return n}();function k(t,r){if(void 0===t.length)throw t.length+"/"+r;var e=function(){for(var e=0;e<t.length&&0==t[e];)e+=1;for(var n=new Array(t.length-e+r),o=0;o<t.length-e;o+=1)n[o]=t[o+e];return n}(),n={getAt:function(t){return e[t]},getLength:function(){return e.length},multiply:function(t){for(var r=new Array(n.getLength()+t.getLength()-1),e=0;e<n.getLength();e+=1)for(var o=0;o<t.getLength();o+=1)r[e+o]^=C.gexp(C.glog(n.getAt(e))+C.glog(t.getAt(o)));return k(r,0)},mod:function(t){if(n.getLength()-t.getLength()<0)return n;for(var r=C.glog(n.getAt(0))-C.glog(t.getAt(0)),e=new Array(n.getLength()),o=0;o<n.getLength();o+=1)e[o]=n.getAt(o);for(o=0;o<t.getLength();o+=1)e[o]^=C.gexp(C.glog(t.getAt(o))+r);return k(e,0).mod(t)}};return n}var A=function(){var t=[[1,26,19],[1,26,16],[1,26,13],[1,26,9],[1,44,34],[1,44,28],[1,44,22],[1,44,16],[1,70,55],[1,70,44],[2,35,17],[2,35,13],[1,100,80],[2,50,32],[2,50,24],[4,25,9],[1,134,108],[2,67,43],[2,33,15,2,34,16],[2,33,11,2,34,12],[2,86,68],[4,43,27],[4,43,19],[4,43,15],[2,98,78],[4,49,31],[2,32,14,4,33,15],[4,39,13,1,40,14],[2,121,97],[2,60,38,2,61,39],[4,40,18,2,41,19],[4,40,14,2,41,15],[2,146,116],[3,58,36,2,59,37],[4,36,16,4,37,17],[4,36,12,4,37,13],[2,86,68,2,87,69],[4,69,43,1,70,44],[6,43,19,2,44,20],[6,43,15,2,44,16],[4,101,81],[1,80,50,4,81,51],[4,50,22,4,51,23],[3,36,12,8,37,13],[2,116,92,2,117,93],[6,58,36,2,59,37],[4,46,20,6,47,21],[7,42,14,4,43,15],[4,133,107],[8,59,37,1,60,38],[8,44,20,4,45,21],[12,33,11,4,34,12],[3,145,115,1,146,116],[4,64,40,5,65,41],[11,36,16,5,37,17],[11,36,12,5,37,13],[5,109,87,1,110,88],[5,65,41,5,66,42],[5,54,24,7,55,25],[11,36,12,7,37,13],[5,122,98,1,123,99],[7,73,45,3,74,46],[15,43,19,2,44,20],[3,45,15,13,46,16],[1,135,107,5,136,108],[10,74,46,1,75,47],[1,50,22,15,51,23],[2,42,14,17,43,15],[5,150,120,1,151,121],[9,69,43,4,70,44],[17,50,22,1,51,23],[2,42,14,19,43,15],[3,141,113,4,142,114],[3,70,44,11,71,45],[17,47,21,4,48,22],[9,39,13,16,40,14],[3,135,107,5,136,108],[3,67,41,13,68,42],[15,54,24,5,55,25],[15,43,15,10,44,16],[4,144,116,4,145,117],[17,68,42],[17,50,22,6,51,23],[19,46,16,6,47,17],[2,139,111,7,140,112],[17,74,46],[7,54,24,16,55,25],[34,37,13],[4,151,121,5,152,122],[4,75,47,14,76,48],[11,54,24,14,55,25],[16,45,15,14,46,16],[6,147,117,4,148,118],[6,73,45,14,74,46],[11,54,24,16,55,25],[30,46,16,2,47,17],[8,132,106,4,133,107],[8,75,47,13,76,48],[7,54,24,22,55,25],[22,45,15,13,46,16],[10,142,114,2,143,115],[19,74,46,4,75,47],[28,50,22,6,51,23],[33,46,16,4,47,17],[8,152,122,4,153,123],[22,73,45,3,74,46],[8,53,23,26,54,24],[12,45,15,28,46,16],[3,147,117,10,148,118],[3,73,45,23,74,46],[4,54,24,31,55,25],[11,45,15,31,46,16],[7,146,116,7,147,117],[21,73,45,7,74,46],[1,53,23,37,54,24],[19,45,15,26,46,16],[5,145,115,10,146,116],[19,75,47,10,76,48],[15,54,24,25,55,25],[23,45,15,25,46,16],[13,145,115,3,146,116],[2,74,46,29,75,47],[42,54,24,1,55,25],[23,45,15,28,46,16],[17,145,115],[10,74,46,23,75,47],[10,54,24,35,55,25],[19,45,15,35,46,16],[17,145,115,1,146,116],[14,74,46,21,75,47],[29,54,24,19,55,25],[11,45,15,46,46,16],[13,145,115,6,146,116],[14,74,46,23,75,47],[44,54,24,7,55,25],[59,46,16,1,47,17],[12,151,121,7,152,122],[12,75,47,26,76,48],[39,54,24,14,55,25],[22,45,15,41,46,16],[6,151,121,14,152,122],[6,75,47,34,76,48],[46,54,24,10,55,25],[2,45,15,64,46,16],[17,152,122,4,153,123],[29,74,46,14,75,47],[49,54,24,10,55,25],[24,45,15,46,46,16],[4,152,122,18,153,123],[13,74,46,32,75,47],[48,54,24,14,55,25],[42,45,15,32,46,16],[20,147,117,4,148,118],[40,75,47,7,76,48],[43,54,24,22,55,25],[10,45,15,67,46,16],[19,148,118,6,149,119],[18,75,47,31,76,48],[34,54,24,34,55,25],[20,45,15,61,46,16]],r=function(t,r){var e={};return e.totalCount=t,e.dataCount=r,e},e={};return e.getRSBlocks=function(e,n){var o=function(r,e){switch(e){case g.L:return t[4*(r-1)+0];case g.M:return t[4*(r-1)+1];case g.Q:return t[4*(r-1)+2];case g.H:return t[4*(r-1)+3];default:return}}(e,n);if(void 0===o)throw"bad rs block @ typeNumber:"+e+"/errorCorrectionLevel:"+n;for(var i=o.length/3,a=[],u=0;u<i;u+=1)for(var f=o[3*u+0],c=o[3*u+1],l=o[3*u+2],h=0;h<f;h+=1)a.push(r(c,l));return a},e}(),b=function(){var t=[],r=0,e={getBuffer:function(){return t},getAt:function(r){var e=Math.floor(r/8);return 1==(t[e]>>>7-r%8&1)},put:function(t,r){for(var n=0;n<r;n+=1)e.putBit(1==(t>>>r-n-1&1))},getLengthInBits:function(){return r},putBit:function(e){var n=Math.floor(r/8);t.length<=n&&t.push(0),e&&(t[n]|=128>>>r%8),r+=1}};return e},M=function(t){var r=a,e=t,n={getMode:function(){return r},getLength:function(t){return e.length},write:function(t){for(var r=e,n=0;n+2<r.length;)t.put(o(r.substring(n,n+3)),10),n+=3;n<r.length&&(r.length-n==1?t.put(o(r.substring(n,n+1)),4):r.length-n==2&&t.put(o(r.substring(n,n+2)),7))}},o=function(t){for(var r=0,e=0;e<t.length;e+=1)r=10*r+i(t.charAt(e));return r},i=function(t){if("0"<=t&&t<="9")return t.charCodeAt(0)-"0".charCodeAt(0);throw"illegal char :"+t};return n},x=function(t){var r=u,e=t,n={getMode:function(){return r},getLength:function(t){return e.length},write:function(t){for(var r=e,n=0;n+1<r.length;)t.put(45*o(r.charAt(n))+o(r.charAt(n+1)),11),n+=2;n<r.length&&t.put(o(r.charAt(n)),6)}},o=function(t){if("0"<=t&&t<="9")return t.charCodeAt(0)-"0".charCodeAt(0);if("A"<=t&&t<="Z")return t.charCodeAt(0)-"A".charCodeAt(0)+10;switch(t){case" ":return 36;case"$":return 37;case"%":return 38;case"*":return 39;case"+":return 40;case"-":return 41;case".":return 42;case"/":return 43;case":":return 44;default:throw"illegal char :"+t}};return n},m=function(r){var e=f,n=t.stringToBytes(r),o={getMode:function(){return e},getLength:function(t){return n.length},write:function(t){for(var r=0;r<n.length;r+=1)t.put(n[r],8)}};return o},L=function(r){var e=c,n=t.stringToBytesFuncs.SJIS;if(!n)throw"sjis not supported.";!function(){var t=n("友");if(2!=t.length||38726!=(t[0]<<8|t[1]))throw"sjis not supported."}();var o=n(r),i={getMode:function(){return e},getLength:function(t){return~~(o.length/2)},write:function(t){for(var r=o,e=0;e+1<r.length;){var n=(255&r[e])<<8|255&r[e+1];if(33088<=n&&n<=40956)n-=33088;else{if(!(57408<=n&&n<=60351))throw"illegal char at "+(e+1)+"/"+n;n-=49472}n=192*(n>>>8&255)+(255&n),t.put(n,13),e+=2}if(e<r.length)throw"illegal char at "+(e+1)}};return i},D=function(){var t=[],r={writeByte:function(r){t.push(255&r)},writeShort:function(t){r.writeByte(t),r.writeByte(t>>>8)},writeBytes:function(t,e,n){e=e||0,n=n||t.length;for(var o=0;o<n;o+=1)r.writeByte(t[o+e])},writeString:function(t){for(var e=0;e<t.length;e+=1)r.writeByte(t.charCodeAt(e))},toByteArray:function(){return t},toString:function(){var r="";r+="[";for(var e=0;e<t.length;e+=1)e>0&&(r+=","),r+=t[e];return r+="]"}};return r},S=function(t){var r=t,e=0,n=0,o=0,i={read:function(){for(;o<8;){if(e>=r.length){if(0==o)return-1;throw"unexpected end of file./"+o}var t=r.charAt(e);if(e+=1,"="==t)return o=0,-1;t.match(/^\s$/)||(n=n<<6|a(t.charCodeAt(0)),o+=6)}var i=n>>>o-8&255;return o-=8,i}},a=function(t){if(65<=t&&t<=90)return t-65;if(97<=t&&t<=122)return t-97+26;if(48<=t&&t<=57)return t-48+52;if(43==t)return 62;if(47==t)return 63;throw"c:"+t};return i},I=function(t,r,e){for(var n=function(t,r){var e=t,n=r,o=new Array(t*r),i={setPixel:function(t,r,n){o[r*e+t]=n},write:function(t){t.writeString("GIF87a"),t.writeShort(e),t.writeShort(n),t.writeByte(128),t.writeByte(0),t.writeByte(0),t.writeByte(0),t.writeByte(0),t.writeByte(0),t.writeByte(255),t.writeByte(255),t.writeByte(255),t.writeString(","),t.writeShort(0),t.writeShort(0),t.writeShort(e),t.writeShort(n),t.writeByte(0);var r=a(2);t.writeByte(2);for(var o=0;r.length-o>255;)t.writeByte(255),t.writeBytes(r,o,255),o+=255;t.writeByte(r.length-o),t.writeBytes(r,o,r.length-o),t.writeByte(0),t.writeString(";")}},a=function(t){for(var r=1<<t,e=1+(1<<t),n=t+1,i=u(),a=0;a<r;a+=1)i.add(String.fromCharCode(a));i.add(String.fromCharCode(r)),i.add(String.fromCharCode(e));var f,c,g,l=D(),h=(f=l,c=0,g=0,{write:function(t,r){if(t>>>r!=0)throw"length over";for(;c+r>=8;)f.writeByte(255&(t<<c|g)),r-=8-c,t>>>=8-c,g=0,c=0;g|=t<<c,c+=r},flush:function(){c>0&&f.writeByte(g)}});h.write(r,n);var s=0,v=String.fromCharCode(o[s]);for(s+=1;s<o.length;){var d=String.fromCharCode(o[s]);s+=1,i.contains(v+d)?v+=d:(h.write(i.indexOf(v),n),i.size()<4095&&(i.size()==1<<n&&(n+=1),i.add(v+d)),v=d)}return h.write(i.indexOf(v),n),h.write(e,n),h.flush(),l.toByteArray()},u=function(){var t={},r=0,e={add:function(n){if(e.contains(n))throw"dup key:"+n;t[n]=r,r+=1},size:function(){return r},indexOf:function(r){return t[r]},contains:function(r){return void 0!==t[r]}};return e};return i}(t,r),o=0;o<r;o+=1)for(var i=0;i<t;i+=1)n.setPixel(i,o,e(i,o));var a=D();n.write(a);for(var u=function(){var t=0,r=0,e=0,n="",o={},i=function(t){n+=String.fromCharCode(a(63&t))},a=function(t){if(t<0);else{if(t<26)return 65+t;if(t<52)return t-26+97;if(t<62)return t-52+48;if(62==t)return 43;if(63==t)return 47}throw"n:"+t};return o.writeByte=function(n){for(t=t<<8|255&n,r+=8,e+=1;r>=6;)i(t>>>r-6),r-=6},o.flush=function(){if(r>0&&(i(t<<6-r),t=0,r=0),e%3!=0)for(var o=3-e%3,a=0;a<o;a+=1)n+="="},o.toString=function(){return n},o}(),f=a.toByteArray(),c=0;c<f.length;c+=1)u.writeByte(f[c]);return u.flush(),"data:image/gif;base64,"+u};return t}();qrcode.stringToBytesFuncs["UTF-8"]=function(t){return function(t){for(var r=[],e=0;e<t.length;e++){var n=t.charCodeAt(e);n<128?r.push(n):n<2048?r.push(192|n>>6,128|63&n):n<55296||n>=57344?r.push(224|n>>12,128|n>>6&63,128|63&n):(e++,n=65536+((1023&n)<<10|1023&t.charCodeAt(e)),r.push(240|n>>18,128|n>>12&63,128|n>>6&63,128|63&n))}return r}(t)},function(t){"function"==typeof define&&define.amd?define([],t):"object"==typeof exports&&(module.exports=t())}(function(){return qrcode});
+
+/* Wrapper that draws to a canvas — picks smallest type that fits.
+   EC level 'L' (low, ~7% redundancy) gives the fewest modules for a given
+   payload, producing a smaller, less-dense QR that any camera can scan.
+   EC-M / EC-H are only worth it for printed codes that may be partially torn. */
+const QR = {
+  render: function(canvas, text, scale) {
+    scale = scale || 4;
+    let qr = null;
+    for (let t = 1; t <= 40; t++) {
+      try {
+        const trial = qrcode(t, 'L');   // EC-L: smallest possible output
+        trial.addData(text, 'Byte');
+        trial.make();
+        qr = trial;
+        break;
+      } catch(e) { /* payload too large for this type, try next */ }
+    }
+    if (!qr) throw new Error('QR: data too long even at type 40');
+    const size  = qr.getModuleCount();
+    const quiet = 4; // 4-module quiet zone (spec minimum)
+    const dim   = (size + quiet * 2) * scale;
+    canvas.width  = dim;
+    canvas.height = dim;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, dim, dim);
+    ctx.fillStyle = '#1a1209';          // near-black for better contrast
+    for (let r = 0; r < size; r++) {
+      for (let c = 0; c < size; c++) {
+        if (qr.isDark(r, c)) {
+          ctx.fillRect((c + quiet) * scale, (r + quiet) * scale, scale, scale);
+        }
+      }
+    }
+  }
+};
+
+/* ═══════════════════════════════════════════════
+   QR SHARE — encodes story data directly into the URL
+   so QR codes work without a server or localStorage
+═══════════════════════════════════════════════ */
+let qrCurrentUrl = '';
+let qrCurrentTitle = '';
+
+function storySlug(title){
+  return (title||'').trim().replace(/\s+/g,'-').replace(/[^a-zA-Z0-9\-]/g,'').slice(0,40);
+}
+
+/* Encode a story as a compact data URL for QR sharing.
+   Images are stripped to just captions + title/preview — keeps QR small enough to scan.
+   Recipient sees a "View Story" page with the text; if they have the full app they
+   can also import the story. */
+function buildStoryShareUrl(story) {
+  const base = location.origin + location.pathname;
+  const slug  = encodeURIComponent(storySlug(story.title));
+
+  /* ── Strategy for a small, scannable QR ──────────────────────────────
+     QR density grows fast with URL length. A Type-10 QR (~57×57 modules)
+     fits ~174 bytes at EC-L and is easy for any camera to scan.
+     A Type-25 QR (~117×117) is borderline; Type-30+ is the dense mess
+     shown in the screenshot.
+
+     Rule: encode ONLY title + preview (no captions/content). That keeps
+     the payload under 250 bytes → Type ≤15, perfectly scannable.
+     If even title+preview is > 400 chars after encoding, fall back to
+     slug-only (the shortest possible URL).                              ── */
+
+  // On file:// there is no server, so encoding the full path is pointless;
+  // use slug-only so the QR stays tiny even for local testing.
+  if (location.protocol === 'file:') {
+    return base + '#story=' + slug;
+  }
+
+  // For hosted pages: encode just title + preview — no captions
+  try {
+    const compact = { t: story.title, p: (story.preview || '').slice(0, 120) };
+    const b64  = btoa(unescape(encodeURIComponent(JSON.stringify(compact))));
+    const url  = base + '#sdata=' + b64;
+    // Hard cap: if it's still too long, fall back to slug
+    return url.length <= 500 ? url : base + '#story=' + slug;
+  } catch(e) {
+    return base + '#story=' + slug;
+  }
+}
+
+function buildShareUrl(storyOnly){
+  if (storyOnly && viewStory) {
+    return buildStoryShareUrl(viewStory);
+  }
+  return location.origin + location.pathname;
+}
+
+function openQR(storyOnly){
+  const isStory = storyOnly === true && viewStory;
+  qrCurrentUrl   = buildShareUrl(isStory);
+  qrCurrentTitle = isStory ? viewStory.title : 'Advi & Avi\'s Story World';
+
+  document.getElementById('qr-head-title').textContent  = isStory ? '📱 Share This Story' : '📱 Share Story World';
+  document.getElementById('qr-label').textContent       = isStory ? 'SCAN TO OPEN THIS STORY' : 'SCAN TO OPEN THE SITE';
+  document.getElementById('qr-title-display').textContent = qrCurrentTitle;
+  document.getElementById('qr-url').textContent         = qrCurrentUrl;
+
+  // Story thumbnail in QR header
+  const thumbImg   = document.getElementById('qr-thumb-img');
+  const thumbEmoji = document.getElementById('qr-thumb-emoji');
+  if (isStory) {
+    // Try first panel / cover image as thumbnail
+    const thumb = viewStory.type === 'comic'
+      ? (viewStory.panels?.[0]?.dataUrl || '')
+      : (viewStory.image || '');
+    if (thumb) {
+      thumbImg.src = thumb;
+      thumbImg.style.display = 'block';
+      thumbEmoji.style.display = 'none';
+    } else {
+      thumbImg.style.display = 'none';
+      thumbEmoji.style.display = '';
+      thumbEmoji.textContent = '📖';
+    }
+  } else {
+    thumbImg.style.display = 'none';
+    thumbEmoji.style.display = '';
+    thumbEmoji.textContent = '📚';
+  }
+
+  // Show a friendly note about what the QR contains
+  const noteEl = document.getElementById('qr-share-note');
+  if (noteEl) {
+    if (isStory) {
+      noteEl.textContent = '📖 QR encodes story text — anyone can scan it! Images stay local.';
+      noteEl.style.display = '';
+    } else {
+      noteEl.style.display = 'none';
+    }
+  }
+
+  try {
+    QR.render(document.getElementById('qr-canvas'), qrCurrentUrl, 4);
+  } catch(err){
+    console.error(err);
+    toast('⚠️ Could not generate QR — link too long');
+    return;
+  }
+
+  document.getElementById('qr-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeQR(){
+  document.getElementById('qr-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function handleQrBg(e){ if (e.target === document.getElementById('qr-overlay')) closeQR(); }
+
+function copyShareUrl(){
+  if (!qrCurrentUrl) return;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(qrCurrentUrl)
+      .then(()=>toast('🔗 Link copied!'))
+      .catch(()=>fallbackCopy(qrCurrentUrl));
+  } else fallbackCopy(qrCurrentUrl);
+}
+function fallbackCopy(text){
+  const ta=document.createElement('textarea');
+  ta.value=text; ta.style.position='fixed'; ta.style.left='-9999px';
+  document.body.appendChild(ta); ta.select();
+  try{ document.execCommand('copy'); toast('🔗 Link copied!'); }
+  catch(_){ toast('⚠️ Could not copy — long-press the link instead'); }
+  document.body.removeChild(ta);
+}
+
+function downloadQR(){
+  const canvas = document.getElementById('qr-canvas');
+  const safe   = (qrCurrentTitle||'storyland').replace(/[^a-zA-Z0-9]/g,'_').slice(0,30);
+  const link   = document.createElement('a');
+  link.download = `qr-${safe}.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+  toast('⬇️ QR code saved!');
+}
+
+async function nativeShare(){
+  const shareData = { title: qrCurrentTitle, text: 'Check out: ' + qrCurrentTitle, url: qrCurrentUrl };
+  if (navigator.share) {
+    try { await navigator.share(shareData); }
+    catch(err){ if (err.name !== 'AbortError') toast('⚠️ Share cancelled'); }
+  } else {
+    copyShareUrl();
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   DEEP-LINK: open a story via #story=slug or #sdata=base64
+═══════════════════════════════════════════════ */
+function handleDeepLink(){
+  const hash = location.hash;
+
+  // ── New: sdata= links from QR codes (story text encoded as base64 JSON)
+  const sdataMatch = hash.match(/sdata=([^&]+)/);
+  if (sdataMatch) {
+    try {
+      const json    = decodeURIComponent(escape(atob(sdataMatch[1])));
+      const compact = JSON.parse(json);
+      // Check if we already have this story by title
+      const existing = STORIES.findIndex(s => s.title === compact.t);
+      if (existing >= 0) {
+        setTimeout(() => openViewer(existing), 100);
+        return;
+      }
+      // Show the story data in a preview modal
+      showScannedStoryPreview(compact);
+    } catch(e) {
+      console.error('sdata decode error:', e);
+      toast('⚠️ Could not decode story link');
+    }
+    return;
+  }
+
+  // ── Legacy: #story=slug
+  const m = hash.match(/story=([^&]+)/);
+  if (!m) return;
+  const slug = decodeURIComponent(m[1]);
+  const idx = STORIES.findIndex(s => storySlug(s.title) === slug);
+  if (idx >= 0) {
+    setTimeout(()=>openViewer(idx), 100);
+  }
+}
+window.addEventListener('hashchange', handleDeepLink);
+
+/* Show a "story preview" when someone scans a QR and opens the page fresh */
+function showScannedStoryPreview(compact) {
+  // Build a text-only story object and open viewer
+  const textStory = {
+    title: compact.t,
+    preview: compact.p,
+    type: compact.tp || 'comic',
+    _scanned: true, // flag: no images, from QR scan
+  };
+  if (textStory.type === 'comic') {
+    textStory.panels = (compact.captions || []).map((c, i) => ({
+      dataUrl: '', caption: c,
+      _placeholder: true,
+    }));
+    // If no panels decoded, add one placeholder
+    if (!textStory.panels.length) {
+      for (let i = 0; i < (compact.panelCount || 1); i++) {
+        textStory.panels.push({ dataUrl: '', caption: '', _placeholder: true });
+      }
+    }
+  } else {
+    textStory.content = (compact.captions || []).join('\n\n');
+  }
+
+  // Show a toast then open a special viewer
+  toast('📱 Story opened from QR scan!');
+  viewStory = textStory;
+  panelIdx  = 0;
+  stopSpeaking();
+
+  document.getElementById('vw-title').textContent = textStory.title + ' (Scanned)';
+
+  if (textStory.type === 'comic' && textStory.panels?.length > 0) {
+    document.getElementById('vw-panels-area').style.display = '';
+    document.getElementById('vw-single-area').style.display = 'none';
+    buildDots();
+    renderPanel();
+  } else {
+    document.getElementById('vw-panels-area').style.display = 'none';
+    document.getElementById('vw-single-area').style.display = '';
+    document.getElementById('vw-single-img').src = '';
+    const content = (textStory.content || '').split(/\n\n+/).map(p=>`<p>${p}</p>`).join('');
+    document.getElementById('vw-single-content').innerHTML = content;
+  }
+  renderVoiceChips();
+  renderPersonChips();
+  document.getElementById('viewer-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+/* ═══════════════════════════════════════════════
+   STORAGE SIZE INDICATOR
+═══════════════════════════════════════════════ */
+async function updateStorageIndicator() {
+  const el = document.getElementById('storage-indicator');
+  if (!el) return;
+  if (navigator.storage && navigator.storage.estimate) {
+    const { usage, quota } = await navigator.storage.estimate();
+    const usedMB  = (usage  / 1024 / 1024).toFixed(1);
+    const quotaMB = Math.round(quota / 1024 / 1024);
+    const pct     = Math.round(usage / quota * 100);
+    el.textContent = `💾 ${usedMB} MB / ${quotaMB} MB used (${pct}%)`;
+    el.style.color = pct > 80 ? '#e44' : 'var(--soft)';
+  } else {
+    el.textContent = `📦 ${STORIES.length} stor${STORIES.length===1?'y':'ies'} saved`;
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   MIGRATE old localStorage data to IndexedDB
+   (runs once, then localStorage is cleared)
+═══════════════════════════════════════════════ */
+async function migrateLocalStorage() {
+  const old = localStorage.getItem('aa-stories');
+  if (!old) return;
+  try {
+    const parsed = JSON.parse(old);
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      // Assign ids if missing
+      parsed.forEach(s => { if (!s.id) s.id = 'story_' + Date.now() + '_' + Math.random().toString(36).slice(2); });
+      await saveToDB(parsed);
+      STORIES = parsed;
+      localStorage.removeItem('aa-stories'); // clean up
+      toast('✅ Your old stories have been migrated to the new storage system!');
+    }
+  } catch(e) { console.warn('Migration failed:', e); }
+}
+
+/* ═══════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════ */
+(async function init() {
+  // Load from IndexedDB (the fix for the storage bug)
+  STORIES = await loadFromDB();
+
+  // If nothing in IndexedDB, check for old localStorage data and migrate
+  if (STORIES.length === 0) await migrateLocalStorage();
+
+  renderGrid();
+  updateStorageIndicator();
+  handleDeepLink();
+})();
+
+</script>
+</body>
+</html>
