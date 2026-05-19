@@ -274,25 +274,6 @@ nav{position:sticky;top:0;z-index:100;background:rgba(255,248,238,.95);backdrop-
 .qr-hint{font-size:.74rem;color:var(--soft);margin-top:.8rem;line-height:1.5;display:flex;align-items:center;justify-content:center;gap:.3rem}
 .qr-hint::before{content:'✨'}
 
-/* ── TOKEN MODAL ── */
-.tok-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:400;display:none;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(6px)}
-.tok-overlay.open{display:flex}
-.tok-box{background:var(--bg);border-radius:22px;width:100%;max-width:420px;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.45);animation:qr-pop .28s cubic-bezier(.34,1.56,.64,1)}
-.tok-head{background:linear-gradient(135deg,#06D6A0,#04a87e);color:#fff;padding:1rem 1.3rem;display:flex;align-items:center;justify-content:space-between}
-.tok-head h2{font-size:1rem;font-weight:800}
-.tok-body{padding:1.3rem 1.4rem 1.5rem;display:flex;flex-direction:column;gap:.8rem}
-.tok-hint{font-size:.76rem;color:var(--soft);line-height:1.6;background:rgba(6,214,160,.08);border-radius:10px;padding:.65rem .9rem;border:1.5px solid rgba(6,214,160,.2)}
-.tok-input{width:100%;padding:.6rem .9rem;border-radius:10px;border:2px solid var(--border);background:var(--card);color:var(--ink);font-family:monospace;font-size:.88rem;font-weight:600;outline:none;transition:border-color .2s}
-.tok-input:focus{border-color:#06D6A0}
-.tok-status{font-size:.82rem;font-weight:700;padding:.4rem .8rem;border-radius:8px;display:none;line-height:1.4}
-.tok-status.ok{background:rgba(6,214,160,.12);color:#04a87e;display:block}
-.tok-status.err{background:rgba(255,60,60,.1);color:#e44;display:block}
-.tok-status.info{background:rgba(155,93,229,.1);color:var(--purple);display:block}
-.tok-actions{display:flex;gap:.6rem}
-.tok-go{flex:1;padding:.55rem 1rem;border-radius:50px;background:#06D6A0;color:#fff;border:none;font-weight:800;font-size:.9rem;cursor:pointer;font-family:"Nunito",sans-serif;box-shadow:0 4px 14px rgba(6,214,160,.4);transition:transform .15s,opacity .2s}
-.tok-go:hover{transform:translateY(-1px)}
-.tok-go:disabled{opacity:.5;cursor:default;transform:none}
-.tok-cancel{padding:.55rem 1rem;border-radius:50px;background:transparent;border:2px solid var(--border);color:var(--soft);font-weight:800;font-size:.9rem;cursor:pointer;font-family:"Nunito",sans-serif}
 /* ── TOAST ── */
 .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(100px);background:var(--ink);color:#fff;padding:.65rem 1.5rem;border-radius:50px;font-size:.88rem;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.3);z-index:500;transition:transform .3s;white-space:nowrap}
 .toast.show{transform:translateX(-50%) translateY(0)}
@@ -560,32 +541,6 @@ footer{text-align:center;padding:2rem 1rem;color:var(--soft);font-size:.85rem;bo
   </div>
 </div>
 
-<!-- TOKEN MODAL -->
-<div class="tok-overlay" id="tok-overlay" onclick="if(event.target===this)closeTokModal()">
-  <div class="tok-box">
-    <div class="tok-head">
-      <h2>🔑 One-time Setup</h2>
-      <button class="add-close" onclick="closeTokModal()">✕</button>
-    </div>
-    <div class="tok-body">
-      <div class="tok-hint">
-        ✅ Repo detected: <strong>ruthika-reddy/storyland</strong> (branch: main). Paste your token once — future publishes are instant, no prompts.
-      </div>
-      <div>
-        <label style="font-size:.78rem;font-weight:800;color:var(--soft);display:block;margin-bottom:.3rem">Personal Access Token <span style="font-weight:600;opacity:.7">(needs <code>repo</code> scope)</span></label>
-        <input class="tok-input" id="tok-input" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false" onkeydown="if(event.key==='Enter')doPublish()">
-      </div>
-      <div class="tok-hint" style="font-size:.72rem">
-        🔑 Get a token at <strong>github.com → Settings → Developer settings → Personal access tokens → Tokens (classic)</strong> — enable the <strong>repo</strong> checkbox. Stored only in this browser.
-      </div>
-      <div id="tok-status" class="tok-status"></div>
-      <div class="tok-actions">
-        <button class="tok-go" id="tok-go-btn" onclick="doPublish()">🚀 Save &amp; Publish Now</button>
-        <button class="tok-cancel" onclick="closeTokModal()">Cancel</button>
-      </div>
-    </div>
-  </div>
-</div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -612,113 +567,32 @@ let STORIES = [];
    Click Publish → download index.html →
    drag onto your GitHub repo → done, no token needed.
 ═══════════════════════════════════════════════ */
-/* ------------------------------------------------------------------
-   GitHub auto-push: ruthika-reddy/storyland (main)
-   Token saved in localStorage after first entry.
-   Every subsequent click publishes silently — no modal.
------------------------------------------------------------------- */
-const GH_USER   = 'ruthika-reddy';
-const GH_REPO   = 'storyland';
-const GH_BRANCH = 'main';
-
-function getToken()  { return localStorage.getItem('gh_token') || ''; }
-function saveToken(t){ localStorage.setItem('gh_token', t.trim()); }
-
-function openTokModal(msg, type) {
-  document.getElementById('tok-input').value = getToken();
-  setTokStatus(msg || '', type || '');
-  document.getElementById('tok-overlay').classList.add('open');
-  setTimeout(function(){ document.getElementById('tok-input').focus(); }, 100);
-}
-function closeTokModal() {
-  document.getElementById('tok-overlay').classList.remove('open');
-}
-function setTokStatus(msg, type) {
-  var el = document.getElementById('tok-status');
-  el.textContent = msg;
-  el.className = 'tok-status' + (type ? ' ' + type : '');
-}
-
-async function buildPublishHTML() {
-  var res = await fetch(location.pathname + '?nc=' + Date.now());
-  if (!res.ok) throw new Error('Fetch failed: HTTP ' + res.status);
-  var html = await res.text();
-  // Escape </ so it cannot close the script tag inside HTML
-  var sj = JSON.stringify(STORIES).split('</').join('<\\/');
-  var re = new RegExp('(/\\* __STORIES_START__ \\*/)([\\s\\S]*?)(/\\* __STORIES_END__ \\*/)');
-  var updated = html.replace(re, '/* __STORIES_START__ */const SEED_STORIES = ' + sj + ';/* __STORIES_END__ */');
-  if (updated === html) throw new Error('Story markers not found in page source.');
-  return updated;
-}
-
-async function pushToGitHub(token, htmlContent) {
-  var api  = 'https://api.github.com/repos/' + GH_USER + '/' + GH_REPO + '/contents/index.html';
-  var hdrs = {
-    'Authorization': 'token ' + token,
-    'Accept': 'application/vnd.github+json',
-    'Content-Type': 'application/json'
-  };
-  var sha = null;
-  var gr = await fetch(api + '?ref=' + GH_BRANCH, { headers: hdrs });
-  if (gr.ok) { sha = (await gr.json()).sha; }
-  else if (gr.status !== 404) {
-    var e = await gr.json().catch(function(){ return {}; });
-    throw new Error('GitHub ' + gr.status + ': ' + (e.message || 'unknown'));
-  }
-  var b64  = btoa(unescape(encodeURIComponent(htmlContent)));
-  var body = { message: 'Publish stories', content: b64, branch: GH_BRANCH };
-  if (sha) body.sha = sha;
-  var pr = await fetch(api, { method: 'PUT', headers: hdrs, body: JSON.stringify(body) });
-  if (!pr.ok) {
-    var e2 = await pr.json().catch(function(){ return {}; });
-    throw new Error('Push failed ' + pr.status + ': ' + (e2.message || 'unknown'));
-  }
-}
-
-/* Called by the modal Save & Publish button */
-async function doPublish() {
-  var token = document.getElementById('tok-input').value.trim();
-  if (!token) { setTokStatus('Please paste your Personal Access Token.', 'err'); return; }
-  saveToken(token);
-  var btn = document.getElementById('tok-go-btn');
-  btn.disabled = true; btn.textContent = 'Publishing...';
-  setTokStatus('Building site...', 'info');
-  try {
-    var html = await buildPublishHTML();
-    setTokStatus('Pushing to GitHub...', 'info');
-    await pushToGitHub(token, html);
-    setTokStatus('Live! ruthika-reddy.github.io/storyland/', 'ok');
-    toast('Stories published to GitHub Pages!');
-    setTimeout(closeTokModal, 2500);
-  } catch(err) {
-    console.error(err);
-    setTokStatus(err.message, 'err');
-    toast('Publish failed — check your token');
-  } finally {
-    btn.disabled = false; btn.textContent = 'Save & Publish Now';
-  }
-}
-
-/* Main Publish button — silent if token saved, modal if not */
 async function publishSite() {
-  if (!STORIES.length) { toast('No stories yet — add some first!'); return; }
-  if (location.protocol === 'file:') { toast('Open the live GitHub Pages URL to publish.'); return; }
-  var token = getToken();
-  if (!token) { openTokModal(); return; }
-  var btn = document.querySelector('[onclick="publishSite()"]');
+  if (!STORIES.length) { toast('No stories yet!'); return; }
+  const btn = document.querySelector('[onclick="publishSite()"]');
   if (btn) { btn.textContent = '...'; btn.disabled = true; }
   try {
-    var html = await buildPublishHTML();
-    await pushToGitHub(token, html);
-    toast('Stories published! ruthika-reddy.github.io/storyland/');
-  } catch(err) {
-    console.error(err);
-    localStorage.removeItem('gh_token');
-    openTokModal(err.message, 'err');
-  } finally {
-    if (btn) { btn.textContent = '📤 Publish'; btn.disabled = false; }
-  }
+    const res = await fetch(location.pathname + '?nc=' + Date.now());
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const html = await res.text();
+    const sj   = JSON.stringify(STORIES).split('<' + '/').join('<\/');
+    const updated = html.replace(
+      /\/\* __STORIES_START__ \*\/[\s\S]*?\/\* __STORIES_END__ \*\//,
+      '/* __STORIES_START__ */const SEED_STORIES = ' + sj + ';/* __STORIES_END__ */'
+    );
+    if (updated === html) throw new Error('Markers not found.');
+    const a = Object.assign(document.createElement('a'), {
+      href: URL.createObjectURL(new Blob([updated], {type:'text/html'})),
+      download: 'index.html'
+    });
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    toast('Downloaded! Drag index.html onto your GitHub repo.');
+  } catch(e) { toast('Error: ' + e.message); }
+  finally { if (btn) { btn.textContent = '📤 Publish'; btn.disabled = false; } }
 }
+
+
 
 
 
@@ -831,8 +705,9 @@ function importStories() {
 }
 let editId = null;
 let storyType = 'comic';
-let pendingPanels = []; // [{dataUrl, caption}]
-let singleImgDataUrl = null;
+let pendingPanels = []; // [{file,preview,caption}] file=File obj, preview=objectURL
+let singleImgFile    = null;
+let singleImgPreview = null;
 
 // Viewer state
 let viewStory    = null;
@@ -1422,28 +1297,23 @@ async function uploadToCloudinary(file) {
   return data.secure_url;   // permanent HTTPS URL on Cloudinary CDN
 }
 
-/* add panel images */
-async function addPanels(e) {
+/* add panel images — store File objects, upload to Cloudinary on Save */
+function addPanels(e) {
   const files = [...e.target.files];
   if (!files.length) return;
-  toast('☁️ Uploading ' + files.length + ' image' + (files.length > 1 ? 's' : '') + ' to cloud…');
-  try {
-    const urls = await Promise.all(files.map(f => uploadToCloudinary(f)));
-    const incoming = urls.map(dataUrl => ({ dataUrl, caption: '' }));
-    pendingPanels = [...pendingPanels, ...incoming];
-    renderPanelList();
-    toast('✅ ' + files.length + ' image' + (files.length > 1 ? 's' : '') + ' uploaded!');
-  } catch(err) {
-    toast('⚠️ Upload failed: ' + err.message);
-    console.error(err);
-  }
+  pendingPanels = [...pendingPanels, ...files.map(f => ({
+    file:    f,
+    preview: URL.createObjectURL(f),
+    caption: ''
+  }))];
+  renderPanelList();
   e.target.value = '';
 }
 
 function renderPanelList() {
   document.getElementById('panels-list').innerHTML = pendingPanels.map((p,i) => `
     <div class="panel-row">
-      <img class="panel-thumb" src="${p.dataUrl}" alt="Panel ${i+1}">
+      <img class="panel-thumb" src="${p.preview || p.dataUrl || ''}" alt="Panel ${i+1}">
       <input class="panel-cap" type="text" placeholder="Caption for panel ${i+1}…"
         value="${esc(p.caption)}" oninput="pendingPanels[${i}].caption=this.value">
       <button class="panel-del" onclick="removePanel(${i})">✕</button>
@@ -1452,19 +1322,13 @@ function renderPanelList() {
 
 function removePanel(i) { pendingPanels.splice(i,1); renderPanelList(); }
 
-/* single image */
-async function setSingleImg(e) {
+/* single image — store File, show local preview, upload on Save */
+function setSingleImg(e) {
   const f = e.target.files[0]; if (!f) return;
-  toast('☁️ Uploading image to cloud…');
-  try {
-    singleImgDataUrl = await uploadToCloudinary(f);
-    const img = document.getElementById('single-preview');
-    img.src = singleImgDataUrl; img.classList.add('show');
-    toast('✅ Image uploaded!');
-  } catch(err) {
-    toast('⚠️ Upload failed: ' + err.message);
-    console.error(err);
-  }
+  singleImgFile    = f;
+  singleImgPreview = URL.createObjectURL(f);
+  const img = document.getElementById('single-preview');
+  img.src = singleImgPreview; img.classList.add('show');
 }
 
 /* save */
@@ -1476,11 +1340,27 @@ async function saveStory() {
   let story = { title, preview, type: storyType, featured: document.getElementById('f-featured').checked };
 
   if (storyType === 'comic') {
-    if (!pendingPanels.length) { toast('⚠️ Please upload at least one panel image!'); return; }
-    story.panels = pendingPanels.map(p=>({dataUrl:p.dataUrl, caption:p.caption||''}));
+    if (!pendingPanels.length) { toast('⚠️ Add at least one image!'); return; }
+    toast('☁️ Uploading images…');
+    try {
+      story.panels = await Promise.all(pendingPanels.map(async p => {
+        const url = p.file ? await uploadToCloudinary(p.file) : (p.dataUrl || p.preview);
+        if (p.file && p.preview) URL.revokeObjectURL(p.preview);
+        return { dataUrl: url, caption: p.caption || '' };
+      }));
+    } catch(err) { toast('Upload failed: ' + err.message); return; }
   } else {
-    if (!singleImgDataUrl) { toast('⚠️ Please upload an image!'); return; }
-    story.image   = singleImgDataUrl;
+    const hasImg = singleImgFile || singleImgPreview;
+    if (!hasImg) { toast('⚠️ Please add an image!'); return; }
+    if (singleImgFile) {
+      toast('☁️ Uploading image…');
+      try {
+        story.image = await uploadToCloudinary(singleImgFile);
+        if (singleImgPreview) URL.revokeObjectURL(singleImgPreview);
+      } catch(err) { toast('Upload failed: ' + err.message); return; }
+    } else {
+      story.image = singleImgPreview;
+    }
     story.content = document.getElementById('f-content').value.trim();
   }
 
@@ -1512,10 +1392,10 @@ function editStory(i) {
   document.getElementById('f-featured').checked = !!s.featured;
   setType(s.type||'comic');
   if (s.type==='comic') {
-    pendingPanels = (s.panels||[]).map(p=>({dataUrl:p.dataUrl,caption:p.caption||''}));
+    pendingPanels = (s.panels||[]).map(p=>({file:null, preview:p.dataUrl, caption:p.caption||''}));
     renderPanelList();
   } else {
-    singleImgDataUrl = s.image||null;
+    singleImgFile=null; singleImgPreview=s.image||null;
     if (s.image) { const img=document.getElementById('single-preview'); img.src=s.image; img.classList.add('show'); }
     document.getElementById('f-content').value = s.content||'';
   }
@@ -1532,7 +1412,7 @@ async function deleteStory(i) {
 }
 
 function resetForm() {
-  storyType = 'comic'; pendingPanels = []; singleImgDataUrl = null; editId = null;
+  storyType = 'comic'; pendingPanels = []; singleImgFile=null; singleImgPreview=null; editId = null;
   document.getElementById('f-title').value = '';
   document.getElementById('f-preview').value = '';
   document.getElementById('f-featured').checked = false;
