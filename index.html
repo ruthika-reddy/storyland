@@ -301,7 +301,6 @@ footer{text-align:center;padding:2rem 1rem;color:var(--soft);font-size:.85rem;bo
       <button class="btn btn-teal btn-sm" onclick="openBookletPrint()">🖨️ Print All</button>
       <button class="btn btn-outline btn-sm" onclick="exportStories()" title="Save stories as a backup file">📦 Backup</button>
       <button class="btn btn-outline btn-sm" onclick="importStories()" title="Restore stories from backup">📥 Restore</button>
-      <button class="btn btn-sm" style="background:linear-gradient(135deg,#06D6A0,#04a87e);color:#fff;box-shadow:0 4px 14px rgba(6,214,160,.38)" onclick="publishSite()" title="Bake stories into a new HTML file for deployment">📤 Publish</button>
       <button class="icon-btn" id="theme-btn" onclick="toggleTheme()" title="Dark mode">🌙</button>
     </div>
   </div>
@@ -550,11 +549,58 @@ footer{text-align:center;padding:2rem 1rem;color:var(--soft);font-size:.85rem;bo
 let STORIES = [];
 
 /* ═══════════════════════════════════════════════════════════════════
-   SEED STORIES — hardcoded by the "Publish Site" button.
-   Anyone who opens the link sees these stories immediately.
-   DO NOT edit manually — use the 📤 Publish button instead.
+   SUPABASE — shared cloud database. Safe public anon key by design.
+   Stories added here appear for everyone instantly, no publish needed.
 ═══════════════════════════════════════════════════════════════════ */
-/* __STORIES_START__ */const SEED_STORIES = [];/* __STORIES_END__ */
+const SB_URL = 'https://ddnztvtohxkuixrmzbac.supabase.co';
+const SB_KEY = 'sb_publishable_180pM3qus1rhPFEUSNPF4Q_u2-SLJbl';
+const SB_HDR = {
+  'apikey': SB_KEY,
+  'Authorization': 'Bearer ' + SB_KEY,
+  'Content-Type': 'application/json'
+};
+
+async function loadFromSupabase() {
+  let res;
+  try {
+    res = await fetch(SB_URL + '/rest/v1/stories?select=data', { headers: SB_HDR });
+  } catch(netErr) {
+    // "Failed to fetch" = network or CORS issue
+    throw new Error('Network error — is your Supabase project active? (' + netErr.message + ')');
+  }
+  if (res.status === 401 || res.status === 403) {
+    throw new Error('Auth error — check your anon key in Supabase Settings → API');
+  }
+  if (res.status === 404) {
+    throw new Error('Table not found — please run the SQL setup in Supabase SQL Editor');
+  }
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    throw new Error('Supabase error ' + res.status + ': ' + body.slice(0, 120));
+  }
+  const rows = await res.json();
+  return rows.map(r => r.data).filter(Boolean);
+}
+
+async function upsertToSupabase(story) {
+  const res = await fetch(SB_URL + '/rest/v1/stories', {
+    method: 'POST',
+    headers: { ...SB_HDR, 'Prefer': 'resolution=merge-duplicates' },
+    body: JSON.stringify({ id: story.id, data: story })
+  });
+  if (!res.ok) {
+    const txt = await res.text().catch(() => '');
+    throw new Error('Save failed ' + res.status + ': ' + txt);
+  }
+}
+
+async function deleteFromSupabase(storyId) {
+  const res = await fetch(SB_URL + '/rest/v1/stories?id=eq.' + encodeURIComponent(storyId), {
+    method: 'DELETE',
+    headers: SB_HDR
+  });
+  if (!res.ok) throw new Error('Delete failed: HTTP ' + res.status);
+}
 
 /* ═══════════════════════════════════════════════
    PUBLISH SITE
@@ -567,99 +613,24 @@ let STORIES = [];
    Click Publish → download index.html →
    drag onto your GitHub repo → done, no token needed.
 ═══════════════════════════════════════════════ */
-async function publishSite() {
-  if (!STORIES.length) { toast('No stories yet!'); return; }
-  const btn = document.querySelector('[onclick="publishSite()"]');
-  if (btn) { btn.textContent = '...'; btn.disabled = true; }
-  try {
-    const res = await fetch(location.pathname + '?nc=' + Date.now());
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const html = await res.text();
-    const sj   = JSON.stringify(STORIES).split('<' + '/').join('<\/');
-    const updated = html.replace(
-      /\/\* __STORIES_START__ \*\/[\s\S]*?\/\* __STORIES_END__ \*\//,
-      '/* __STORIES_START__ */const SEED_STORIES = ' + sj + ';/* __STORIES_END__ */'
-    );
-    if (updated === html) throw new Error('Markers not found.');
-    const a = Object.assign(document.createElement('a'), {
-      href: URL.createObjectURL(new Blob([updated], {type:'text/html'})),
-      download: 'index.html'
-    });
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
-    toast('Downloaded! Drag index.html onto your GitHub repo.');
-  } catch(e) { toast('Error: ' + e.message); }
-  finally { if (btn) { btn.textContent = '📤 Publish'; btn.disabled = false; } }
-}
-
-
-
-
-
 /* ═══════════════════════════════════════════════════════════════
-   INDEXEDDB STORAGE
-   ── Why? localStorage is limited to ~5 MB. One story with a few
-      photos (stored as base64) can easily exceed that, causing
-      saves to fail silently. IndexedDB handles 500 MB+ for free,
-      built into every modern browser — no Firebase needed.
+   STORAGE — Supabase cloud sync
 ═══════════════════════════════════════════════════════════════ */
-const DB_NAME    = 'storyland-db';
-const DB_VERSION = 1;
-const STORE_NAME = 'stories';
-let _db = null;
 
-function openDB() {
-  return new Promise((resolve, reject) => {
-    if (_db) { resolve(_db); return; }
-    const req = indexedDB.open(DB_NAME, DB_VERSION);
-    req.onupgradeneeded = e => {
-      const db = e.target.result;
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME, { keyPath: 'id' });
-      }
-    };
-    req.onsuccess = e => { _db = e.target.result; resolve(_db); };
-    req.onerror   = e => reject(e.target.error);
-  });
-}
-
-async function loadFromDB() {
+/* Save (upsert) all stories — called after any add/edit */
+async function save() {
+  if (!STORIES.length) return;
   try {
-    const db = await openDB();
-    return new Promise((resolve, reject) => {
-      const tx   = db.transaction(STORE_NAME, 'readonly');
-      const req  = tx.objectStore(STORE_NAME).getAll();
-      req.onsuccess = e => resolve(e.target.result || []);
-      req.onerror   = e => reject(e.target.error);
+    const rows = STORIES.map(s => ({ id: s.id, data: s }));
+    const res = await fetch(SB_URL + '/rest/v1/stories', {
+      method: 'POST',
+      headers: { ...SB_HDR, 'Prefer': 'resolution=merge-duplicates' },
+      body: JSON.stringify(rows)
     });
+    if (!res.ok) toast('Cloud save failed — check your connection');
   } catch(e) {
-    console.error('IndexedDB load error:', e);
-    // Fallback: try legacy localStorage (migrate old data)
-    try { return JSON.parse(localStorage.getItem('aa-stories') || '[]'); }
-    catch(_) { return []; }
-  }
-}
-
-async function saveToDB(stories) {
-  try {
-    const db = await openDB();
-    return new Promise((resolve, reject) => {
-      const tx    = db.transaction(STORE_NAME, 'readwrite');
-      const store = tx.objectStore(STORE_NAME);
-      // Clear and rewrite all (simple approach, works for typical collection sizes)
-      store.clear();
-      stories.forEach(s => {
-        // Ensure every story has an id
-        if (!s.id) s.id = 'story_' + Date.now() + '_' + Math.random().toString(36).slice(2);
-        store.put(s);
-      });
-      tx.oncomplete = () => resolve();
-      tx.onerror    = e  => reject(e.target.error);
-    });
-  } catch(e) {
-    console.error('IndexedDB save error:', e);
-    toast('⚠️ Storage error — could not save. Try freeing up browser storage.');
-    throw e;
+    console.error('save error:', e);
+    toast('Could not save — check your connection');
   }
 }
 
@@ -1371,6 +1342,7 @@ async function saveStory() {
     toast('✅ Story updated!');
   } else {
     story.id = 'story_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+    story.createdAt = new Date().toISOString();
     STORIES.push(story);
     toast('🎉 Story added!');
   }
@@ -1405,9 +1377,11 @@ function editStory(i) {
 }
 
 async function deleteStory(i) {
-  if (!confirm(`Delete "${STORIES[i].title}"?`)) return;
-  STORIES.splice(i,1);
-  await save(); renderGrid(); renderMgrList();
+  if (!confirm('Delete "' + STORIES[i].title + '"?')) return;
+  const sid = STORIES[i].id;
+  STORIES.splice(i, 1);
+  try { await deleteFromSupabase(sid); } catch(e) { console.error(e); }
+  renderGrid(); renderMgrList();
   toast('🗑️ Story deleted');
 }
 
@@ -1764,62 +1738,26 @@ function showScannedStoryPreview(compact) {
 }
 
 /* ═══════════════════════════════════════════════
-   STORAGE SIZE INDICATOR
-═══════════════════════════════════════════════ */
-async function updateStorageIndicator() {
-  const el = document.getElementById('storage-indicator');
-  if (!el) return;
-  if (navigator.storage && navigator.storage.estimate) {
-    const { usage, quota } = await navigator.storage.estimate();
-    const usedMB  = (usage  / 1024 / 1024).toFixed(1);
-    const quotaMB = Math.round(quota / 1024 / 1024);
-    const pct     = Math.round(usage / quota * 100);
-    el.textContent = `💾 ${usedMB} MB / ${quotaMB} MB used (${pct}%)`;
-    el.style.color = pct > 80 ? '#e44' : 'var(--soft)';
-  } else {
-    el.textContent = `📦 ${STORIES.length} stor${STORIES.length===1?'y':'ies'} saved`;
-  }
-}
-
-/* ═══════════════════════════════════════════════
-   MIGRATE old localStorage data to IndexedDB
-   (runs once, then localStorage is cleared)
-═══════════════════════════════════════════════ */
-async function migrateLocalStorage() {
-  const old = localStorage.getItem('aa-stories');
-  if (!old) return;
-  try {
-    const parsed = JSON.parse(old);
-    if (Array.isArray(parsed) && parsed.length > 0) {
-      // Assign ids if missing
-      parsed.forEach(s => { if (!s.id) s.id = 'story_' + Date.now() + '_' + Math.random().toString(36).slice(2); });
-      await saveToDB(parsed);
-      STORIES = parsed;
-      localStorage.removeItem('aa-stories'); // clean up
-      toast('✅ Your old stories have been migrated to the new storage system!');
-    }
-  } catch(e) { console.warn('Migration failed:', e); }
-}
-
-/* ═══════════════════════════════════════════════
-   INIT
+   INIT — load from Supabase cloud
 ═══════════════════════════════════════════════ */
 (async function init() {
-  STORIES = await loadFromDB();
-
-  // Fresh browser / fresh device — seed from the baked-in stories
-  if (STORIES.length === 0 && SEED_STORIES.length > 0) {
-    STORIES = SEED_STORIES.map(s => ({
-      ...s,
-      id: s.id || ('story_' + Date.now() + '_' + Math.random().toString(36).slice(2))
-    }));
-    await saveToDB(STORIES);
+  try {
+    STORIES = await loadFromSupabase();
+    // Sort by creation time so order is consistent
+    STORIES.sort(function(a, b) {
+      return (a.createdAt || a.id || '').localeCompare(b.createdAt || b.id || '');
+    });
+  } catch(e) {
+    console.error('Supabase load error:', e);
+    // Show the real error so it is easy to diagnose
+    const msg = e.message || 'Unknown error';
+    toast('Load error: ' + msg);
+    // Show in page too so it is visible even without dev tools
+    const grid = document.getElementById('story-grid');
+    if (grid) grid.innerHTML = '<div class="empty-state"><div class="big">⚠️</div><p style="color:#e44;font-weight:800">' + msg + '</p><p style="margin-top:.5rem;font-size:.85rem">Check the browser Console (F12) for details.</p></div>';
+    STORIES = [];
   }
-
-  if (STORIES.length === 0) await migrateLocalStorage();
-
   renderGrid();
-  updateStorageIndicator();
   handleDeepLink();
 })();
 
