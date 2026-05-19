@@ -299,8 +299,9 @@ footer{text-align:center;padding:2rem 1rem;color:var(--soft);font-size:.85rem;bo
       <button class="btn btn-green btn-sm" onclick="openVPM()">🎙️ Voices</button>
       <button class="btn btn-orange btn-sm" onclick="openQR()">📱 Share</button>
       <button class="btn btn-teal btn-sm" onclick="openBookletPrint()">🖨️ Print All</button>
-      <button class="btn btn-outline btn-sm" onclick="exportStories()" title="Download all stories as a backup file">📦 Backup</button>
-      <button class="btn btn-outline btn-sm" onclick="importStories()" title="Restore stories from a backup file">📥 Restore</button>
+      <button class="btn btn-outline btn-sm" onclick="exportStories()" title="Save stories as a backup file">📦 Backup</button>
+      <button class="btn btn-outline btn-sm" onclick="importStories()" title="Restore stories from backup">📥 Restore</button>
+      <button class="btn btn-sm" style="background:linear-gradient(135deg,#06D6A0,#04a87e);color:#fff;box-shadow:0 4px 14px rgba(6,214,160,.38)" onclick="publishSite()" title="Bake stories into a new HTML file for deployment">📤 Publish</button>
       <button class="icon-btn" id="theme-btn" onclick="toggleTheme()" title="Dark mode">🌙</button>
     </div>
   </div>
@@ -547,6 +548,72 @@ footer{text-align:center;padding:2rem 1rem;color:var(--soft);font-size:.85rem;bo
    STATE
 ═══════════════════════════════════════════════ */
 let STORIES = [];
+
+/* ═══════════════════════════════════════════════════════════════════
+   SEED STORIES — hardcoded by the "Publish Site" button.
+   Anyone who opens the link sees these stories immediately.
+   DO NOT edit manually — use the 📤 Publish button instead.
+═══════════════════════════════════════════════════════════════════ */
+/* __STORIES_START__ */const SEED_STORIES = [];/* __STORIES_END__ */
+
+/* ═══════════════════════════════════════════════
+   PUBLISH SITE
+   Bakes current stories into a new index.html.
+   Upload that file to GitHub / Netlify and every
+   visitor sees the stories immediately on any device.
+═══════════════════════════════════════════════ */
+async function publishSite() {
+  if (!STORIES.length) {
+    toast('No stories yet — add some first!');
+    return;
+  }
+
+  if (location.protocol === 'file:') {
+    alert(
+      'To publish your stories:\n\n' +
+      '1. Deploy this file to GitHub Pages first.\n' +
+      '2. Open the live URL in your browser.\n' +
+      '3. Add your stories (or tap Restore from backup).\n' +
+      '4. Tap Publish — a new index.html downloads.\n' +
+      '5. Replace index.html on GitHub with that file.\n\n' +
+      'Tip: tap Backup now to save your stories.'
+    );
+    return;
+  }
+
+  toast('Building site file...');
+  try {
+    const res = await fetch(location.pathname + '?v=' + Date.now());
+    if (!res.ok) throw new Error('fetch failed: ' + res.status);
+    let html = await res.text();
+
+    // Escape "</" in the JSON so the HTML parser cannot mistake it for a
+    // closing tag. JS ignores the backslash; JSON.parse still works fine.
+    const storiesJSON = JSON.stringify(STORIES)
+      .replace(/<\//g, '<\\/');      // e.g. "<\/script>" is safe inside HTML
+
+    const marker_re = /\/\* __STORIES_START__ \*\/[\s\S]*?\/\* __STORIES_END__ \*\//;
+    const updated = html.replace(
+      marker_re,
+      '/* __STORIES_START__ */const SEED_STORIES = ' + storiesJSON + ';/* __STORIES_END__ */'
+    );
+    if (updated === html) throw new Error('Story markers not found in HTML source.');
+
+    const blob = new Blob([updated], { type: 'text/html;charset=utf-8' });
+    const a    = document.createElement('a');
+    a.href     = URL.createObjectURL(blob);
+    a.download = 'index.html';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function() { URL.revokeObjectURL(a.href); }, 5000);
+
+    toast('index.html downloaded! Upload it to GitHub to publish your stories.');
+  } catch(err) {
+    console.error('publishSite error:', err);
+    toast('Error: ' + err.message);
+  }
+}
 
 /* ═══════════════════════════════════════════════════════════════
    INDEXEDDB STORAGE
@@ -1747,10 +1814,17 @@ async function migrateLocalStorage() {
    INIT
 ═══════════════════════════════════════════════ */
 (async function init() {
-  // Load from IndexedDB (the fix for the storage bug)
   STORIES = await loadFromDB();
 
-  // If nothing in IndexedDB, check for old localStorage data and migrate
+  // Fresh browser / fresh device — seed from the baked-in stories
+  if (STORIES.length === 0 && SEED_STORIES.length > 0) {
+    STORIES = SEED_STORIES.map(s => ({
+      ...s,
+      id: s.id || ('story_' + Date.now() + '_' + Math.random().toString(36).slice(2))
+    }));
+    await saveToDB(STORIES);
+  }
+
   if (STORIES.length === 0) await migrateLocalStorage();
 
   renderGrid();
