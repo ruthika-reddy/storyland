@@ -762,7 +762,9 @@ async function doGithubPublish() {
 }
 
 // ── Main entry point from nav button ─────────
-function publishSite() {
+// If GitHub credentials are already saved, publish instantly — no modal needed.
+// Only shows the settings modal when something is missing.
+async function publishSite() {
   if (!STORIES.length) {
     toast('No stories yet — add some first!');
     return;
@@ -777,7 +779,33 @@ function publishSite() {
     );
     return;
   }
-  openGhModal();
+
+  // Check if we already have all credentials saved
+  const cfg = ghLoad();
+  if (!cfg.user || !cfg.repo || !cfg.token) {
+    // First time — open the settings modal to collect credentials
+    openGhModal();
+    return;
+  }
+
+  // ── Credentials already saved: publish instantly, no modal ──
+  toast('⏳ Publishing to GitHub…');
+  const btn = document.querySelector('button[onclick="publishSite()"]');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Publishing…'; }
+
+  try {
+    const html = await buildPublishHTML();
+    const liveUrl = await pushToGitHub(cfg, html);
+    toast('🎉 Published! Opening site…');
+    setTimeout(() => toast('🌐 ' + liveUrl), 2800);
+  } catch (err) {
+    console.error('GitHub publish error:', err);
+    toast('❌ ' + err.message);
+    // On error, open modal so they can fix credentials
+    openGhModal();
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '📤 Publish'; }
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════
