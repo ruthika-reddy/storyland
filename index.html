@@ -274,27 +274,6 @@ nav{position:sticky;top:0;z-index:100;background:rgba(255,248,238,.95);backdrop-
 .qr-hint{font-size:.74rem;color:var(--soft);margin-top:.8rem;line-height:1.5;display:flex;align-items:center;justify-content:center;gap:.3rem}
 .qr-hint::before{content:'✨'}
 
-/* ── GITHUB PUBLISH MODAL ── */
-.gh-overlay{position:fixed;inset:0;background:rgba(0,0,0,.68);z-index:350;display:none;align-items:center;justify-content:center;padding:1rem}
-.gh-overlay.open{display:flex}
-.gh-box{background:var(--bg);border-radius:24px;width:100%;max-width:500px;box-shadow:0 24px 80px rgba(0,0,0,.45);overflow:hidden}
-.gh-head{background:linear-gradient(135deg,#06D6A0,#04a87e);color:#fff;padding:1.1rem 1.5rem;display:flex;align-items:center;justify-content:space-between}
-.gh-head h2{font-size:1.1rem;font-weight:800}
-.gh-body{padding:1.4rem 1.5rem 1.6rem;display:flex;flex-direction:column;gap:.85rem}
-.gh-field label{display:block;font-size:.78rem;font-weight:800;color:var(--soft);margin-bottom:.28rem}
-.gh-field input{width:100%;padding:.5rem .85rem;border-radius:10px;border:2px solid var(--border);background:var(--card);color:var(--ink);font-family:'Nunito',sans-serif;font-size:.88rem;font-weight:600;outline:none;transition:border-color .2s}
-.gh-field input:focus{border-color:#06D6A0}
-.gh-hint{font-size:.76rem;color:var(--soft);line-height:1.55;background:rgba(6,214,160,.08);border-radius:10px;padding:.6rem .9rem;border:1.5px solid rgba(6,214,160,.22)}
-.gh-actions{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.3rem}
-.gh-save-btn{padding:.5rem 1.3rem;border-radius:50px;background:#06D6A0;color:#fff;border:none;font-weight:800;font-size:.88rem;cursor:pointer;font-family:'Nunito',sans-serif;transition:transform .15s,box-shadow .15s;box-shadow:0 4px 14px rgba(6,214,160,.38)}
-.gh-save-btn:hover{transform:translateY(-1px)}
-.gh-save-btn:disabled{opacity:.55;cursor:default;transform:none}
-.gh-cancel-btn{padding:.5rem 1.1rem;border-radius:50px;background:transparent;color:var(--soft);border:2px solid var(--border);font-weight:800;font-size:.88rem;cursor:pointer;font-family:'Nunito',sans-serif}
-.gh-status{font-size:.82rem;font-weight:700;padding:.45rem .85rem;border-radius:8px;display:none;line-height:1.4}
-.gh-status.ok{background:rgba(6,214,160,.12);color:#04a87e;display:block}
-.gh-status.err{background:rgba(255,60,60,.1);color:#e44;display:block}
-.gh-status.info{background:rgba(155,93,229,.1);color:var(--purple);display:block}
-
 /* ── TOAST ── */
 .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(100px);background:var(--ink);color:#fff;padding:.65rem 1.5rem;border-radius:50px;font-size:.88rem;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.3);z-index:500;transition:transform .3s;white-space:nowrap}
 .toast.show{transform:translateX(-50%) translateY(0)}
@@ -562,47 +541,6 @@ footer{text-align:center;padding:2rem 1rem;color:var(--soft);font-size:.85rem;bo
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════
-     GITHUB PUBLISH MODAL
-════════════════════════════════════════ -->
-<div class="gh-overlay" id="gh-overlay" onclick="handleGhBg(event)">
-  <div class="gh-box">
-    <div class="gh-head">
-      <h2>🚀 Publish to GitHub Pages</h2>
-      <button class="add-close" onclick="closeGhModal()">✕</button>
-    </div>
-    <div class="gh-body">
-      <div class="gh-hint">
-        Enter your <strong>Personal Access Token</strong> once — your username, repo and branch are already set. Every publish pushes your stories live instantly!
-      </div>
-      <div class="gh-field">
-        <label>GitHub Username</label>
-        <input type="text" id="gh-username" autocomplete="off" spellcheck="false">
-      </div>
-      <div class="gh-field">
-        <label>Repository Name</label>
-        <input type="text" id="gh-repo" autocomplete="off" spellcheck="false">
-      </div>
-      <div class="gh-field">
-        <label>Branch</label>
-        <input type="text" id="gh-branch" autocomplete="off" spellcheck="false">
-      </div>
-      <div class="gh-field">
-        <label>Personal Access Token <span style="font-weight:600;opacity:.7">(repo scope)</span></label>
-        <input type="password" id="gh-token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false">
-      </div>
-      <div class="gh-hint" style="font-size:.72rem">
-        🔑 Get one at <strong>github.com → Settings → Developer settings → Personal access tokens → Tokens (classic)</strong> — tick the <strong>repo</strong> checkbox. Stored only in this browser.
-      </div>
-      <div id="gh-status" class="gh-status"></div>
-      <div class="gh-actions">
-        <button class="gh-save-btn" id="gh-pub-btn" onclick="doGithubPublish()">📤 Publish Now</button>
-        <button class="gh-cancel-btn" onclick="closeGhModal()">Cancel</button>
-      </div>
-    </div>
-  </div>
-</div>
-
 <div class="toast" id="toast"></div>
 
 <script>
@@ -625,196 +563,53 @@ let STORIES = [];
    visitor sees the stories immediately on any device.
 ═══════════════════════════════════════════════ */
 /* ═══════════════════════════════════════════════
-   GITHUB PUBLISH — ONE-CLICK PUSH TO GITHUB PAGES
-   ruthika-reddy/storyland (main branch)
-   Auto-detected from GitHub Pages URL; only the
-   Personal Access Token needs to be entered once.
+   PUBLISH SITE — bakes stories into index.html
+   Click Publish → download index.html →
+   drag onto your GitHub repo → done, no token needed.
 ═══════════════════════════════════════════════ */
-
-// Default / hardcoded settings for ruthika-reddy/storyland
-const GH_DEFAULT = { user: 'ruthika-reddy', repo: 'storyland', branch: 'main' };
-const GH_KEYS    = { user:'gh_user', repo:'gh_repo', branch:'gh_branch', token:'gh_token' };
-
-function ghAutoDetect() {
-  // When running on GitHub Pages (*.github.io) the repo lives in the URL
-  if (location.hostname.endsWith('.github.io')) {
-    return {
-      user:   location.hostname.replace('.github.io', ''),
-      repo:   location.pathname.split('/').filter(Boolean)[0] || GH_DEFAULT.repo,
-      branch: GH_DEFAULT.branch,
-    };
-  }
-  return null;
-}
-
-function ghLoad() {
-  const auto = ghAutoDetect();
-  return {
-    user:   localStorage.getItem(GH_KEYS.user)   || (auto && auto.user)   || GH_DEFAULT.user,
-    repo:   localStorage.getItem(GH_KEYS.repo)   || (auto && auto.repo)   || GH_DEFAULT.repo,
-    branch: localStorage.getItem(GH_KEYS.branch) || GH_DEFAULT.branch,
-    token:  localStorage.getItem(GH_KEYS.token)  || '',
-  };
-}
-
-function ghSave(cfg) {
-  localStorage.setItem(GH_KEYS.user,   cfg.user.trim());
-  localStorage.setItem(GH_KEYS.repo,   cfg.repo.trim());
-  localStorage.setItem(GH_KEYS.branch, cfg.branch.trim() || 'main');
-  localStorage.setItem(GH_KEYS.token,  cfg.token.trim());
-}
-
-function openGhModal() {
-  const cfg = ghLoad();
-  document.getElementById('gh-username').value = cfg.user;
-  document.getElementById('gh-repo').value     = cfg.repo;
-  document.getElementById('gh-branch').value   = cfg.branch;
-  document.getElementById('gh-token').value    = cfg.token;
-  setGhStatus('', '');
-  document.getElementById('gh-overlay').classList.add('open');
-}
-
-function closeGhModal() {
-  document.getElementById('gh-overlay').classList.remove('open');
-}
-
-function handleGhBg(e) {
-  if (e.target === document.getElementById('gh-overlay')) closeGhModal();
-}
-
-function setGhStatus(msg, type) {
-  const el = document.getElementById('gh-status');
-  el.textContent = msg;
-  el.className = 'gh-status' + (type ? ' ' + type : '');
-}
-
-// Build the baked HTML string (stories embedded)
-async function buildPublishHTML() {
-  const res = await fetch(location.pathname + '?nocache=' + Date.now());
-  if (!res.ok) throw new Error('Could not fetch page source (HTTP ' + res.status + ')');
-  let html = await res.text();
-
-  const storiesJSON = JSON.stringify(STORIES).replace(/<\//g, '<\\/');
-  const marker_re   = /\/\* __STORIES_START__ \*\/[\s\S]*?\/\* __STORIES_END__ \*\//;
-  const updated     = html.replace(
-    marker_re,
-    '/* __STORIES_START__ */const SEED_STORIES = ' + storiesJSON + ';/* __STORIES_END__ */'
-  );
-  if (updated === html) throw new Error('Story markers not found — file may have been modified.');
-  return updated;
-}
-
-// Push content to GitHub via REST API
-async function pushToGitHub(cfg, content) {
-  const apiBase = 'https://api.github.com/repos/' + cfg.user + '/' + cfg.repo;
-  const headers = {
-    'Authorization': 'token ' + cfg.token,
-    'Accept':        'application/vnd.github+json',
-    'Content-Type':  'application/json',
-  };
-
-  // Get existing file SHA (required for update)
-  let sha = null;
-  const getRes = await fetch(apiBase + '/contents/index.html?ref=' + cfg.branch, { headers });
-  if (getRes.ok) {
-    sha = (await getRes.json()).sha;
-  } else if (getRes.status !== 404) {
-    const err = await getRes.json().catch(() => ({}));
-    throw new Error('GitHub API error ' + getRes.status + ': ' + (err.message || 'unknown'));
-  }
-
-  // Base64-encode the HTML
-  const b64  = btoa(unescape(encodeURIComponent(content)));
-  const body = {
-    message: 'Publish stories — ' + new Date().toLocaleString(),
-    content: b64,
-    branch:  cfg.branch,
-  };
-  if (sha) body.sha = sha;
-
-  const putRes = await fetch(apiBase + '/contents/index.html', {
-    method: 'PUT', headers, body: JSON.stringify(body),
-  });
-
-  if (!putRes.ok) {
-    const err = await putRes.json().catch(() => ({}));
-    throw new Error('GitHub push failed ' + putRes.status + ': ' + (err.message || 'unknown'));
-  }
-  return 'https://' + cfg.user + '.github.io/' + cfg.repo + '/';
-}
-
-// Called by the Publish Now button inside the modal
-async function doGithubPublish() {
-  const cfg = {
-    user:   document.getElementById('gh-username').value.trim(),
-    repo:   document.getElementById('gh-repo').value.trim(),
-    branch: document.getElementById('gh-branch').value.trim() || 'main',
-    token:  document.getElementById('gh-token').value.trim(),
-  };
-  if (!cfg.user || !cfg.repo || !cfg.token) {
-    setGhStatus('Please fill in all fields, especially the token.', 'err'); return;
-  }
-  ghSave(cfg);
-
-  const btn = document.getElementById('gh-pub-btn');
-  btn.disabled = true; btn.textContent = 'Publishing…';
-  setGhStatus('Building site with your stories…', 'info');
-
-  try {
-    const html   = await buildPublishHTML();
-    setGhStatus('Pushing to GitHub…', 'info');
-    const liveUrl = await pushToGitHub(cfg, html);
-    setGhStatus('Published! Live at: ' + liveUrl, 'ok');
-    toast('Stories are live on GitHub Pages!');
-  } catch(err) {
-    console.error(err);
-    setGhStatus(err.message, 'err');
-    toast('Publish failed — see the modal for details.');
-  } finally {
-    btn.disabled = false; btn.textContent = 'Publish Now';
-  }
-}
-
-// Main entry: if token saved → publish immediately, else open modal
 async function publishSite() {
-  if (!STORIES.length) { toast('No stories yet — add some first!'); return; }
-
-  if (location.protocol === 'file:') {
-    alert(
-      'You are running the file locally.\n\n' +
-      '1. Upload this index.html to your GitHub repo (ruthika-reddy/storyland).\n' +
-      '2. Enable GitHub Pages (Settings > Pages > main branch).\n' +
-      '3. Open https://ruthika-reddy.github.io/storyland/ in your browser.\n' +
-      '4. Add stories there, then tap Publish — they go live in seconds!'
-    );
+  if (!STORIES.length) {
+    toast('No stories yet — add some first!');
     return;
   }
 
-  const cfg = ghLoad();
-  if (cfg.token) {
-    // Token already saved — publish straight away, no modal
-    const btn = document.querySelector('[onclick="publishSite()"]');
-    if (btn) { btn.textContent = '⏳'; btn.disabled = true; }
-    try {
-      setGhStatus && setGhStatus('', '');
-      toast('Publishing to GitHub…');
-      const html    = await buildPublishHTML();
-      const liveUrl = await pushToGitHub(cfg, html);
-      toast('Stories published! ' + liveUrl);
-    } catch(err) {
-      console.error(err);
-      toast('Publish failed: ' + err.message + ' — tap to fix settings');
-      openGhModal();  // Let them correct the token
-    } finally {
-      if (btn) { btn.textContent = '📤 Publish'; btn.disabled = false; }
-    }
-  } else {
-    // First time — ask for the token
-    openGhModal();
+  if (location.protocol === 'file:') {
+    alert('Running locally.\n\nTo publish:\n1. Upload this file as index.html to github.com/ruthika-reddy/storyland\n2. Enable Pages: Settings > Pages > main branch\n3. Open https://ruthika-reddy.github.io/storyland/\n4. Add stories there, then tap Publish.\n5. Drag the downloaded file onto your GitHub repo.');
+    return;
+  }
+
+  const btn = document.querySelector('[onclick="publishSite()"]');
+  if (btn) { btn.textContent = '\u23F3'; btn.disabled = true; }
+
+  try {
+    const res = await fetch(location.pathname + '?nocache=' + Date.now());
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    let html = await res.text();
+
+    const storiesJSON = JSON.stringify(STORIES).replace(/<\//g, '<\\/');
+    const updated = html.replace(
+      /\/\* __STORIES_START__ \*\/[\s\S]*?\/\* __STORIES_END__ \*\//,
+      '/* __STORIES_START__ */const SEED_STORIES = ' + storiesJSON + ';/* __STORIES_END__ */'
+    );
+    if (updated === html) throw new Error('Story markers not found.');
+
+    const blob = new Blob([updated], { type: 'text/html;charset=utf-8' });
+    const a    = document.createElement('a');
+    a.href     = URL.createObjectURL(blob);
+    a.download = 'index.html';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function() { URL.revokeObjectURL(a.href); }, 5000);
+
+    toast('index.html downloaded! Drag it onto your GitHub repo.');
+  } catch(err) {
+    console.error(err);
+    toast('Could not generate: ' + err.message);
+  } finally {
+    if (btn) { btn.textContent = '\uD83D\uDCE4 Publish'; btn.disabled = false; }
   }
 }
-
-
 
 /* ═══════════════════════════════════════════════════════════════
    INDEXEDDB STORAGE
