@@ -278,6 +278,25 @@ nav{position:sticky;top:0;z-index:100;background:rgba(255,248,238,.95);backdrop-
 .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(100px);background:var(--ink);color:#fff;padding:.65rem 1.5rem;border-radius:50px;font-size:.88rem;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.3);z-index:500;transition:transform .3s;white-space:nowrap}
 .toast.show{transform:translateX(-50%) translateY(0)}
 
+/* ── GITHUB SETTINGS MODAL ── */
+.gh-overlay{position:fixed;inset:0;background:rgba(0,0,0,.68);z-index:350;display:none;align-items:center;justify-content:center;padding:1rem}
+.gh-overlay.open{display:flex}
+.gh-box{background:var(--bg);border-radius:24px;width:100%;max-width:500px;box-shadow:0 24px 80px rgba(0,0,0,.45);overflow:hidden}
+.gh-head{background:linear-gradient(135deg,#06D6A0,#04a87e);color:#fff;padding:1.1rem 1.5rem;display:flex;align-items:center;justify-content:space-between}
+.gh-head h2{font-size:1.1rem;font-weight:800}
+.gh-body{padding:1.4rem 1.5rem 1.6rem;display:flex;flex-direction:column;gap:.85rem}
+.gh-field label{display:block;font-size:.78rem;font-weight:800;color:var(--soft);margin-bottom:.28rem}
+.gh-field input{width:100%;padding:.5rem .85rem;border-radius:10px;border:2px solid var(--border);background:var(--card);color:var(--ink);font-family:'Nunito',sans-serif;font-size:.88rem;font-weight:600;outline:none;transition:border-color .2s}
+.gh-field input:focus{border-color:#06D6A0}
+.gh-hint{font-size:.76rem;color:var(--soft);line-height:1.55;background:rgba(6,214,160,.08);border-radius:10px;padding:.6rem .9rem;border:1.5px solid rgba(6,214,160,.22)}
+.gh-actions{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.3rem}
+.gh-save-btn{padding:.5rem 1.3rem;border-radius:50px;background:#06D6A0;color:#fff;border:none;font-weight:800;font-size:.88rem;cursor:pointer;font-family:'Nunito',sans-serif;transition:transform .15s,box-shadow .15s;box-shadow:0 4px 14px rgba(6,214,160,.38)}
+.gh-save-btn:hover{transform:translateY(-1px)}
+.gh-cancel-btn{padding:.5rem 1.1rem;border-radius:50px;background:transparent;color:var(--soft);border:2px solid var(--border);font-weight:800;font-size:.88rem;cursor:pointer;font-family:'Nunito',sans-serif}
+.gh-publish-status{font-size:.82rem;font-weight:700;padding:.45rem .85rem;border-radius:8px;display:none}
+.gh-publish-status.ok{background:rgba(6,214,160,.12);color:#04a87e;display:block}
+.gh-publish-status.err{background:rgba(255,60,60,.1);color:#e44;display:block}
+
 /* ── FOOTER ── */
 footer{text-align:center;padding:2rem 1rem;color:var(--soft);font-size:.85rem;border-top:2px solid var(--border)}
 
@@ -301,6 +320,7 @@ footer{text-align:center;padding:2rem 1rem;color:var(--soft);font-size:.85rem;bo
       <button class="btn btn-teal btn-sm" onclick="openBookletPrint()">🖨️ Print All</button>
       <button class="btn btn-outline btn-sm" onclick="exportStories()" title="Save stories as a backup file">📦 Backup</button>
       <button class="btn btn-outline btn-sm" onclick="importStories()" title="Restore stories from backup">📥 Restore</button>
+      <button class="btn btn-sm" style="background:linear-gradient(135deg,#06D6A0,#04a87e);color:#fff;box-shadow:0 4px 14px rgba(6,214,160,.38)" onclick="publishSite()" title="Bake stories into a new HTML file for deployment">📤 Publish</button>
       <button class="icon-btn" id="theme-btn" onclick="toggleTheme()" title="Dark mode">🌙</button>
     </div>
   </div>
@@ -540,6 +560,47 @@ footer{text-align:center;padding:2rem 1rem;color:var(--soft);font-size:.85rem;bo
   </div>
 </div>
 
+<!-- ═══════════════════════════════════════
+     GITHUB PUBLISH SETTINGS MODAL
+════════════════════════════════════════ -->
+<div class="gh-overlay" id="gh-overlay" onclick="handleGhBg(event)">
+  <div class="gh-box">
+    <div class="gh-head">
+      <h2>🚀 Publish to GitHub Pages</h2>
+      <button class="add-close" onclick="closeGhModal()">✕</button>
+    </div>
+    <div class="gh-body">
+      <div class="gh-hint">
+        Enter your GitHub details once — then every time you hit <strong>📤 Publish</strong> your stories go live automatically, no uploading needed!
+      </div>
+      <div class="gh-field">
+        <label>GitHub Username</label>
+        <input type="text" id="gh-username" placeholder="e.g. advimom" autocomplete="off" spellcheck="false">
+      </div>
+      <div class="gh-field">
+        <label>Repository Name</label>
+        <input type="text" id="gh-repo" placeholder="e.g. advi-avi-stories" autocomplete="off" spellcheck="false">
+      </div>
+      <div class="gh-field">
+        <label>Branch (usually <code>main</code> or <code>gh-pages</code>)</label>
+        <input type="text" id="gh-branch" placeholder="main" autocomplete="off" spellcheck="false">
+      </div>
+      <div class="gh-field">
+        <label>Personal Access Token <span style="font-weight:600;opacity:.75">(needs <code>repo</code> scope)</span></label>
+        <input type="password" id="gh-token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false">
+      </div>
+      <div class="gh-hint" style="font-size:.73rem">
+        🔑 Get a token at <strong>github.com → Settings → Developer settings → Personal access tokens → Tokens (classic)</strong> — enable the <strong>repo</strong> checkbox. Your token is stored only in this browser (localStorage).
+      </div>
+      <div id="gh-status" class="gh-publish-status"></div>
+      <div class="gh-actions">
+        <button class="gh-save-btn" id="gh-publish-btn" onclick="doGithubPublish()">📤 Save &amp; Publish Now</button>
+        <button class="gh-cancel-btn" onclick="closeGhModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -549,88 +610,246 @@ footer{text-align:center;padding:2rem 1rem;color:var(--soft);font-size:.85rem;bo
 let STORIES = [];
 
 /* ═══════════════════════════════════════════════════════════════════
-   SUPABASE — shared cloud database. Safe public anon key by design.
-   Stories added here appear for everyone instantly, no publish needed.
+   SEED STORIES — hardcoded by the "Publish Site" button.
+   Anyone who opens the link sees these stories immediately.
+   DO NOT edit manually — use the 📤 Publish button instead.
 ═══════════════════════════════════════════════════════════════════ */
-const SB_URL = 'https://ddnztvtohxkuixrmzbac.supabase.co';
-const SB_KEY = 'sb_publishable_180pM3qus1rhPFEUSNPF4Q_u2-SLJbl';
-const SB_HDR = {
-  'apikey': SB_KEY,
-  'Authorization': 'Bearer ' + SB_KEY,
-  'Content-Type': 'application/json'
-};
+/* __STORIES_START__ */const SEED_STORIES = [];/* __STORIES_END__ */
 
-async function loadFromSupabase() {
-  let res;
+/* ═══════════════════════════════════════════════
+   PUBLISH SITE → GitHub Pages (direct push, no upload)
+   Opens a settings modal the first time, then on
+   subsequent clicks it publishes instantly.
+═══════════════════════════════════════════════ */
+
+// ── GitHub settings helpers ──────────────────
+const GH_KEYS = { user:'gh_user', repo:'gh_repo', branch:'gh_branch', token:'gh_token' };
+
+function ghLoad() {
+  return {
+    user:   localStorage.getItem(GH_KEYS.user)   || '',
+    repo:   localStorage.getItem(GH_KEYS.repo)   || '',
+    branch: localStorage.getItem(GH_KEYS.branch) || 'main',
+    token:  localStorage.getItem(GH_KEYS.token)  || '',
+  };
+}
+function ghSave(cfg) {
+  localStorage.setItem(GH_KEYS.user,   cfg.user.trim());
+  localStorage.setItem(GH_KEYS.repo,   cfg.repo.trim());
+  localStorage.setItem(GH_KEYS.branch, cfg.branch.trim() || 'main');
+  localStorage.setItem(GH_KEYS.token,  cfg.token.trim());
+}
+
+// ── Open / close GitHub modal ────────────────
+function openGhModal() {
+  const cfg = ghLoad();
+  document.getElementById('gh-username').value = cfg.user;
+  document.getElementById('gh-repo').value     = cfg.repo;
+  document.getElementById('gh-branch').value   = cfg.branch;
+  document.getElementById('gh-token').value    = cfg.token;
+  setGhStatus('', '');
+  document.getElementById('gh-overlay').classList.add('open');
+}
+function closeGhModal() {
+  document.getElementById('gh-overlay').classList.remove('open');
+}
+function handleGhBg(e) {
+  if (e.target === document.getElementById('gh-overlay')) closeGhModal();
+}
+function setGhStatus(msg, type) {
+  const el = document.getElementById('gh-status');
+  el.textContent = msg;
+  el.className = 'gh-publish-status' + (type ? ' ' + type : '');
+}
+
+// ── Build the baked HTML string ──────────────
+async function buildPublishHTML() {
+  // Fetch the live source of this page
+  const res = await fetch(location.pathname + '?nocache=' + Date.now());
+  if (!res.ok) throw new Error('Could not fetch page source (' + res.status + ')');
+  let html = await res.text();
+
+  const storiesJSON = JSON.stringify(STORIES).replace(/<\//g, '<\\/');
+  const marker_re = /\/\* __STORIES_START__ \*\/[\s\S]*?\/\* __STORIES_END__ \*\//;
+  const updated = html.replace(
+    marker_re,
+    '/* __STORIES_START__ */const SEED_STORIES = ' + storiesJSON + ';/* __STORIES_END__ */'
+  );
+  if (updated === html) throw new Error('Story markers not found — has the file been modified?');
+  return updated;
+}
+
+// ── Push to GitHub via REST API ──────────────
+async function pushToGitHub(cfg, content) {
+  const apiBase = 'https://api.github.com/repos/' + cfg.user + '/' + cfg.repo;
+  const filePath = 'index.html';
+  const headers = {
+    'Authorization': 'token ' + cfg.token,
+    'Accept': 'application/vnd.github+json',
+    'Content-Type': 'application/json',
+  };
+
+  // 1. Get current file SHA (needed for update)
+  let sha = null;
+  const getRes = await fetch(apiBase + '/contents/' + filePath + '?ref=' + cfg.branch, { headers });
+  if (getRes.ok) {
+    const data = await getRes.json();
+    sha = data.sha;
+  } else if (getRes.status !== 404) {
+    const err = await getRes.json().catch(() => ({}));
+    throw new Error('GitHub API error ' + getRes.status + ': ' + (err.message || 'unknown'));
+  }
+
+  // 2. Base64-encode the HTML
+  const b64 = btoa(unescape(encodeURIComponent(content)));
+
+  // 3. Commit (create or update)
+  const body = {
+    message: '📚 Publish stories — ' + new Date().toLocaleString(),
+    content: b64,
+    branch: cfg.branch,
+  };
+  if (sha) body.sha = sha;
+
+  const putRes = await fetch(apiBase + '/contents/' + filePath, {
+    method: 'PUT',
+    headers,
+    body: JSON.stringify(body),
+  });
+
+  if (!putRes.ok) {
+    const err = await putRes.json().catch(() => ({}));
+    throw new Error('GitHub push failed ' + putRes.status + ': ' + (err.message || 'unknown'));
+  }
+  return 'https://' + cfg.user + '.github.io/' + cfg.repo + '/';
+}
+
+// ── Called by Publish button in modal ────────
+async function doGithubPublish() {
+  const cfg = {
+    user:   document.getElementById('gh-username').value.trim(),
+    repo:   document.getElementById('gh-repo').value.trim(),
+    branch: document.getElementById('gh-branch').value.trim() || 'main',
+    token:  document.getElementById('gh-token').value.trim(),
+  };
+
+  if (!cfg.user || !cfg.repo || !cfg.token) {
+    setGhStatus('⚠️ Please fill in username, repo, and token.', 'err');
+    return;
+  }
+
+  ghSave(cfg);  // Remember settings for next time
+
+  const btn = document.getElementById('gh-publish-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Publishing…';
+  setGhStatus('Building your site…', '');
+
   try {
-    res = await fetch(SB_URL + '/rest/v1/stories?select=data', { headers: SB_HDR });
-  } catch(netErr) {
-    // "Failed to fetch" = network or CORS issue
-    throw new Error('Network error — is your Supabase project active? (' + netErr.message + ')');
-  }
-  if (res.status === 401 || res.status === 403) {
-    throw new Error('Auth error — check your anon key in Supabase Settings → API');
-  }
-  if (res.status === 404) {
-    throw new Error('Table not found — please run the SQL setup in Supabase SQL Editor');
-  }
-  if (!res.ok) {
-    const body = await res.text().catch(() => '');
-    throw new Error('Supabase error ' + res.status + ': ' + body.slice(0, 120));
-  }
-  const rows = await res.json();
-  return rows.map(r => r.data).filter(Boolean);
-}
-
-async function upsertToSupabase(story) {
-  const res = await fetch(SB_URL + '/rest/v1/stories', {
-    method: 'POST',
-    headers: { ...SB_HDR, 'Prefer': 'resolution=merge-duplicates' },
-    body: JSON.stringify({ id: story.id, data: story })
-  });
-  if (!res.ok) {
-    const txt = await res.text().catch(() => '');
-    throw new Error('Save failed ' + res.status + ': ' + txt);
+    const html = await buildPublishHTML();
+    setGhStatus('Pushing to GitHub…', '');
+    const liveUrl = await pushToGitHub(cfg, html);
+    setGhStatus('✅ Published! Live at: ' + liveUrl, 'ok');
+    toast('🎉 Stories published to GitHub Pages!');
+  } catch (err) {
+    console.error('GitHub publish error:', err);
+    setGhStatus('❌ ' + err.message, 'err');
+    toast('Publish failed — see details in the modal.');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '📤 Save & Publish Now';
   }
 }
 
-async function deleteFromSupabase(storyId) {
-  const res = await fetch(SB_URL + '/rest/v1/stories?id=eq.' + encodeURIComponent(storyId), {
-    method: 'DELETE',
-    headers: SB_HDR
-  });
-  if (!res.ok) throw new Error('Delete failed: HTTP ' + res.status);
+// ── Main entry point from nav button ─────────
+function publishSite() {
+  if (!STORIES.length) {
+    toast('No stories yet — add some first!');
+    return;
+  }
+  if (location.protocol === 'file:') {
+    alert(
+      'You\'re opening the file locally.\n\n' +
+      'To use one-click publish:\n' +
+      '1. Deploy this index.html to GitHub Pages first (just drag it onto your repo).\n' +
+      '2. Open the live github.io URL.\n' +
+      '3. Add your stories there, then tap 📤 Publish — they go live instantly!'
+    );
+    return;
+  }
+  openGhModal();
 }
 
-/* ═══════════════════════════════════════════════
-   PUBLISH SITE
-   Bakes current stories into a new index.html.
-   Upload that file to GitHub / Netlify and every
-   visitor sees the stories immediately on any device.
-═══════════════════════════════════════════════ */
-/* ═══════════════════════════════════════════════
-   PUBLISH SITE — bakes stories into index.html
-   Click Publish → download index.html →
-   drag onto your GitHub repo → done, no token needed.
-═══════════════════════════════════════════════ */
 /* ═══════════════════════════════════════════════════════════════
-   STORAGE — Supabase cloud sync
+   INDEXEDDB STORAGE
+   ── Why? localStorage is limited to ~5 MB. One story with a few
+      photos (stored as base64) can easily exceed that, causing
+      saves to fail silently. IndexedDB handles 500 MB+ for free,
+      built into every modern browser — no Firebase needed.
 ═══════════════════════════════════════════════════════════════ */
+const DB_NAME    = 'storyland-db';
+const DB_VERSION = 1;
+const STORE_NAME = 'stories';
+let _db = null;
 
-/* Save (upsert) all stories — called after any add/edit */
-async function save() {
-  if (!STORIES.length) return;
+function openDB() {
+  return new Promise((resolve, reject) => {
+    if (_db) { resolve(_db); return; }
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = e => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+      }
+    };
+    req.onsuccess = e => { _db = e.target.result; resolve(_db); };
+    req.onerror   = e => reject(e.target.error);
+  });
+}
+
+async function loadFromDB() {
   try {
-    const rows = STORIES.map(s => ({ id: s.id, data: s }));
-    const res = await fetch(SB_URL + '/rest/v1/stories', {
-      method: 'POST',
-      headers: { ...SB_HDR, 'Prefer': 'resolution=merge-duplicates' },
-      body: JSON.stringify(rows)
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+      const tx   = db.transaction(STORE_NAME, 'readonly');
+      const req  = tx.objectStore(STORE_NAME).getAll();
+      req.onsuccess = e => resolve(e.target.result || []);
+      req.onerror   = e => reject(e.target.error);
     });
-    if (!res.ok) toast('Cloud save failed — check your connection');
   } catch(e) {
-    console.error('save error:', e);
-    toast('Could not save — check your connection');
+    console.error('IndexedDB load error:', e);
+    // Fallback: try legacy localStorage (migrate old data)
+    try { return JSON.parse(localStorage.getItem('aa-stories') || '[]'); }
+    catch(_) { return []; }
+  }
+}
+
+async function saveToDB(stories) {
+  try {
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+      const tx    = db.transaction(STORE_NAME, 'readwrite');
+      const store = tx.objectStore(STORE_NAME);
+      store.clear();
+      stories.forEach(s => {
+        if (!s.id) s.id = 'story_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+        store.put(s);
+      });
+      tx.oncomplete = () => resolve();
+      tx.onerror    = e  => {
+        console.error('IndexedDB tx error:', e.target.error);
+        reject(e.target.error);
+      };
+    });
+  } catch(e) {
+    console.error('IndexedDB save error:', e);
+    // DOMException: QuotaExceededError — images too large for this browser's storage
+    if (e.name === 'QuotaExceededError' || (e.message && e.message.includes('quota'))) {
+      toast('⚠️ Storage full! Try using fewer panels or smaller images.');
+    } else {
+      toast('⚠️ Save failed: ' + (e.message || e.name || 'unknown error'));
+    }
+    throw e;
   }
 }
 
@@ -676,9 +895,8 @@ function importStories() {
 }
 let editId = null;
 let storyType = 'comic';
-let pendingPanels = []; // [{file,preview,caption}] file=File obj, preview=objectURL
-let singleImgFile    = null;
-let singleImgPreview = null;
+let pendingPanels = []; // [{dataUrl, caption}]
+let singleImgDataUrl = null;
 
 // Viewer state
 let viewStory    = null;
@@ -1013,30 +1231,12 @@ function stopVoice() {
 }
 
 async function save() {
-  if (!STORIES.length) return;
-
   try {
-    const rows = STORIES.map(s => ({
-      id: s.id,
-      data: JSON.parse(JSON.stringify(s))
-    }));
-
-    const res = await fetch(SB_URL + '/rest/v1/stories', {
-      method: 'POST',
-      headers: {
-        ...SB_HDR,
-        'Prefer': 'resolution=merge-duplicates'
-      },
-      body: JSON.stringify(rows)
-    });
-
-    if (!res.ok) {
-      toast('Cloud save failed — check connection');
-    }
-
-  } catch (e) {
-    console.error('save error:', e);
-    toast('Cloud save failed: ' + (e.message || e));
+    await saveToDB(STORIES);
+    updateStorageIndicator();
+  } catch(e) {
+    // Error already toasted inside saveToDB — just stop propagation
+    console.error('save() caught:', e);
   }
 }
 
@@ -1272,43 +1472,52 @@ function setType(t) {
   document.getElementById('single-fields').style.display = t==='single' ? '' : 'none';
 }
 
-/* ── Cloudinary image upload ──────────────────────────────────────────────
-   Unsigned preset — safe to embed in client code by design.
-   Images go straight to Cloudinary CDN; we store the URL (not base64),
-   so IndexedDB stays tiny and the published HTML stays small.        ── */
-const CL_CLOUD  = 'duhvadwrq';
-const CL_PRESET = 'storyland_upload';
-
-async function uploadToCloudinary(file) {
-  const fd = new FormData();
-  fd.append('file', file);
-  fd.append('upload_preset', CL_PRESET);
-  console.log(CL_CLOUD, CL_PRESET);
-  const res = await fetch('https://api.cloudinary.com/v1_1/' + CL_CLOUD + '/image/upload', {
-    method: 'POST', body: fd
+/* ── Image compression helper: resizes to max 900px wide, JPEG quality 0.75 ──
+   This keeps each image under ~200 KB instead of the raw 5–10 MB from camera,
+   which is why stories were failing to save (localStorage 5 MB limit). ── */
+function compressImage(file, maxDim, quality) {
+  maxDim  = maxDim  || 700;   // keep panels small — 700px wide is plenty for a story
+  quality = quality || 0.65;  // JPEG 65% — sharp enough, ~3x smaller than default
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        if (w > maxDim || h > maxDim) {
+          if (w > h) { h = Math.round(h * maxDim / w); w = maxDim; }
+          else       { w = Math.round(w * maxDim / h); h = maxDim; }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
   });
-  if (!res.ok) throw new Error('Image upload failed (' + res.status + ')');
-  const data = await res.json();
-  return data.secure_url;   // permanent HTTPS URL on Cloudinary CDN
 }
 
-/* add panel images — store File objects, upload to Cloudinary on Save */
-function addPanels(e) {
+/* add panel images — compress one at a time to stay within memory limits */
+async function addPanels(e) {
   const files = [...e.target.files];
   if (!files.length) return;
-  pendingPanels = [...pendingPanels, ...files.map(f => ({
-    file:    f,
-    preview: URL.createObjectURL(f),
-    caption: ''
-  }))];
-  renderPanelList();
+  toast('⏳ Compressing images… (' + files.length + ' files)');
+  // Process sequentially to avoid out-of-memory on mobile
+  for (const f of files) {
+    const dataUrl = await compressImage(f, 700, 0.65);
+    pendingPanels.push({ dataUrl, caption: '' });
+    renderPanelList(); // show progress as each completes
+  }
   e.target.value = '';
+  toast('✅ ' + files.length + ' image' + (files.length > 1 ? 's' : '') + ' added!');
 }
 
 function renderPanelList() {
   document.getElementById('panels-list').innerHTML = pendingPanels.map((p,i) => `
     <div class="panel-row">
-      <img class="panel-thumb" src="${p.preview || p.dataUrl || ''}" alt="Panel ${i+1}">
+      <img class="panel-thumb" src="${p.dataUrl}" alt="Panel ${i+1}">
       <input class="panel-cap" type="text" placeholder="Caption for panel ${i+1}…"
         value="${esc(p.caption)}" oninput="pendingPanels[${i}].caption=this.value">
       <button class="panel-del" onclick="removePanel(${i})">✕</button>
@@ -1317,13 +1526,13 @@ function renderPanelList() {
 
 function removePanel(i) { pendingPanels.splice(i,1); renderPanelList(); }
 
-/* single image — store File, show local preview, upload on Save */
-function setSingleImg(e) {
-  const f = e.target.files[0]; if (!f) return;
-  singleImgFile    = f;
-  singleImgPreview = URL.createObjectURL(f);
+/* single image */
+async function setSingleImg(e) {
+  const f = e.target.files[0]; if(!f) return;
+  toast('⏳ Compressing image…');
+  singleImgDataUrl = await compressImage(f, 1200, 0.80);
   const img = document.getElementById('single-preview');
-  img.src = singleImgPreview; img.classList.add('show');
+  img.src = singleImgDataUrl; img.classList.add('show');
 }
 
 /* save */
@@ -1335,27 +1544,11 @@ async function saveStory() {
   let story = { title, preview, type: storyType, featured: document.getElementById('f-featured').checked };
 
   if (storyType === 'comic') {
-    if (!pendingPanels.length) { toast('⚠️ Add at least one image!'); return; }
-    toast('☁️ Uploading images…');
-    try {
-      story.panels = await Promise.all(pendingPanels.map(async p => {
-        const url = p.file ? await uploadToCloudinary(p.file) : (p.dataUrl || p.preview);
-        if (p.file && p.preview) URL.revokeObjectURL(p.preview);
-        return { dataUrl: url, caption: p.caption || '' };
-      }));
-    } catch(err) { toast('Upload failed: ' + err.message); return; }
+    if (!pendingPanels.length) { toast('⚠️ Please upload at least one panel image!'); return; }
+    story.panels = pendingPanels.map(p=>({dataUrl:p.dataUrl, caption:p.caption||''}));
   } else {
-    const hasImg = singleImgFile || singleImgPreview;
-    if (!hasImg) { toast('⚠️ Please add an image!'); return; }
-    if (singleImgFile) {
-      toast('☁️ Uploading image…');
-      try {
-        story.image = await uploadToCloudinary(singleImgFile);
-        if (singleImgPreview) URL.revokeObjectURL(singleImgPreview);
-      } catch(err) { toast('Upload failed: ' + err.message); return; }
-    } else {
-      story.image = singleImgPreview;
-    }
+    if (!singleImgDataUrl) { toast('⚠️ Please upload an image!'); return; }
+    story.image   = singleImgDataUrl;
     story.content = document.getElementById('f-content').value.trim();
   }
 
@@ -1366,7 +1559,6 @@ async function saveStory() {
     toast('✅ Story updated!');
   } else {
     story.id = 'story_' + Date.now() + '_' + Math.random().toString(36).slice(2);
-    story.createdAt = new Date().toISOString();
     STORIES.push(story);
     toast('🎉 Story added!');
   }
@@ -1388,10 +1580,10 @@ function editStory(i) {
   document.getElementById('f-featured').checked = !!s.featured;
   setType(s.type||'comic');
   if (s.type==='comic') {
-    pendingPanels = (s.panels||[]).map(p=>({file:null, preview:p.dataUrl, caption:p.caption||''}));
+    pendingPanels = (s.panels||[]).map(p=>({dataUrl:p.dataUrl,caption:p.caption||''}));
     renderPanelList();
   } else {
-    singleImgFile=null; singleImgPreview=s.image||null;
+    singleImgDataUrl = s.image||null;
     if (s.image) { const img=document.getElementById('single-preview'); img.src=s.image; img.classList.add('show'); }
     document.getElementById('f-content').value = s.content||'';
   }
@@ -1401,16 +1593,14 @@ function editStory(i) {
 }
 
 async function deleteStory(i) {
-  if (!confirm('Delete "' + STORIES[i].title + '"?')) return;
-  const sid = STORIES[i].id;
-  STORIES.splice(i, 1);
-  try { await deleteFromSupabase(sid); } catch(e) { console.error(e); }
-  renderGrid(); renderMgrList();
+  if (!confirm(`Delete "${STORIES[i].title}"?`)) return;
+  STORIES.splice(i,1);
+  await save(); renderGrid(); renderMgrList();
   toast('🗑️ Story deleted');
 }
 
 function resetForm() {
-  storyType = 'comic'; pendingPanels = []; singleImgFile=null; singleImgPreview=null; editId = null;
+  storyType = 'comic'; pendingPanels = []; singleImgDataUrl = null; editId = null;
   document.getElementById('f-title').value = '';
   document.getElementById('f-preview').value = '';
   document.getElementById('f-featured').checked = false;
@@ -1762,26 +1952,62 @@ function showScannedStoryPreview(compact) {
 }
 
 /* ═══════════════════════════════════════════════
-   INIT — load from Supabase cloud
+   STORAGE SIZE INDICATOR
+═══════════════════════════════════════════════ */
+async function updateStorageIndicator() {
+  const el = document.getElementById('storage-indicator');
+  if (!el) return;
+  if (navigator.storage && navigator.storage.estimate) {
+    const { usage, quota } = await navigator.storage.estimate();
+    const usedMB  = (usage  / 1024 / 1024).toFixed(1);
+    const quotaMB = Math.round(quota / 1024 / 1024);
+    const pct     = Math.round(usage / quota * 100);
+    el.textContent = `💾 ${usedMB} MB / ${quotaMB} MB used (${pct}%)`;
+    el.style.color = pct > 80 ? '#e44' : 'var(--soft)';
+  } else {
+    el.textContent = `📦 ${STORIES.length} stor${STORIES.length===1?'y':'ies'} saved`;
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   MIGRATE old localStorage data to IndexedDB
+   (runs once, then localStorage is cleared)
+═══════════════════════════════════════════════ */
+async function migrateLocalStorage() {
+  const old = localStorage.getItem('aa-stories');
+  if (!old) return;
+  try {
+    const parsed = JSON.parse(old);
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      // Assign ids if missing
+      parsed.forEach(s => { if (!s.id) s.id = 'story_' + Date.now() + '_' + Math.random().toString(36).slice(2); });
+      await saveToDB(parsed);
+      STORIES = parsed;
+      localStorage.removeItem('aa-stories'); // clean up
+      toast('✅ Your old stories have been migrated to the new storage system!');
+    }
+  } catch(e) { console.warn('Migration failed:', e); }
+}
+
+/* ═══════════════════════════════════════════════
+   INIT
 ═══════════════════════════════════════════════ */
 (async function init() {
-  try {
-    STORIES = await loadFromSupabase();
-    // Sort by creation time so order is consistent
-    STORIES.sort(function(a, b) {
-      return (a.createdAt || a.id || '').localeCompare(b.createdAt || b.id || '');
-    });
-  } catch(e) {
-    console.error('Supabase load error:', e);
-    // Show the real error so it is easy to diagnose
-    const msg = e.message || 'Unknown error';
-    toast('Load error: ' + msg);
-    // Show in page too so it is visible even without dev tools
-    const grid = document.getElementById('story-grid');
-    if (grid) grid.innerHTML = '<div class="empty-state"><div class="big">⚠️</div><p style="color:#e44;font-weight:800">' + msg + '</p><p style="margin-top:.5rem;font-size:.85rem">Check the browser Console (F12) for details.</p></div>';
-    STORIES = [];
+  STORIES = await loadFromDB();
+
+  // Fresh browser / fresh device — seed from the baked-in stories
+  if (STORIES.length === 0 && SEED_STORIES.length > 0) {
+    STORIES = SEED_STORIES.map(s => ({
+      ...s,
+      id: s.id || ('story_' + Date.now() + '_' + Math.random().toString(36).slice(2))
+    }));
+    await saveToDB(STORIES);
   }
+
+  if (STORIES.length === 0) await migrateLocalStorage();
+
   renderGrid();
+  updateStorageIndicator();
   handleDeepLink();
 })();
 
