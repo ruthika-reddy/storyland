@@ -781,76 +781,81 @@ function publishSite() {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   INDEXEDDB STORAGE
-   ── Why? localStorage is limited to ~5 MB. One story with a few
-      photos (stored as base64) can easily exceed that, causing
-      saves to fail silently. IndexedDB handles 500 MB+ for free,
-      built into every modern browser — no Firebase needed.
+   CLOUDINARY — image uploads
+   Unsigned preset — safe to embed by design.
+   Images upload to CDN; we store permanent HTTPS URLs in Supabase.
 ═══════════════════════════════════════════════════════════════ */
-const DB_NAME    = 'storyland-db';
-const DB_VERSION = 1;
-const STORE_NAME = 'stories';
-let _db = null;
+const CL_CLOUD  = 'duhvadrwq';
+const CL_PRESET = 'storyland_upload';
 
-function openDB() {
-  return new Promise((resolve, reject) => {
-    if (_db) { resolve(_db); return; }
-    const req = indexedDB.open(DB_NAME, DB_VERSION);
-    req.onupgradeneeded = e => {
-      const db = e.target.result;
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME, { keyPath: 'id' });
-      }
-    };
-    req.onsuccess = e => { _db = e.target.result; resolve(_db); };
-    req.onerror   = e => reject(e.target.error);
+async function uploadToCloudinary(file) {
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('upload_preset', CL_PRESET);
+  const res = await fetch(
+    'https://api.cloudinary.com/v1_1/' + CL_CLOUD + '/image/upload',
+    { method: 'POST', body: fd }
+  );
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error('Image upload failed (' + res.status + '): ' + (err.error?.message || res.statusText));
+  }
+  const data = await res.json();
+  return data.secure_url;   // permanent CDN URL — stored in Supabase
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SUPABASE — story metadata sync (real-time across all devices)
+   Table schema (run once in Supabase SQL Editor):
+     create table if not exists stories (
+       id text primary key,
+       data jsonb not null,
+       updated_at timestamptz default now()
+     );
+     alter table stories enable row level security;
+     drop policy if exists "public" on stories;
+     create policy "public" on stories for all using (true) with check (true);
+═══════════════════════════════════════════════════════════════ */
+const SB_URL = 'https://ddnztvtohxkuixrmzbac.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkbnp0dnRvaHhrdWl4cm16YmFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc3MjY4MzcsImV4cCI6MjA2MzMwMjgzN30.xSBDjBSq6jEXTXmB0v3PPRh2ZT2vJnB3g0FoamJFfpw';
+const SB_HDR = {
+  'apikey':        SB_KEY,
+  'Authorization': 'Bearer ' + SB_KEY,
+  'Content-Type':  'application/json',
+  'Prefer':        'resolution=merge-duplicates',
+};
+
+async function loadFromSupabase() {
+  const res = await fetch(SB_URL + '/rest/v1/stories?select=data&order=data->>createdAt.asc', {
+    headers: SB_HDR
   });
+  if (!res.ok) {
+    const txt = await res.text().catch(() => '');
+    throw new Error('Supabase load failed ' + res.status + ': ' + txt.slice(0, 120));
+  }
+  const rows = await res.json();
+  return rows.map(r => r.data).filter(Boolean);
 }
 
-async function loadFromDB() {
-  try {
-    const db = await openDB();
-    return new Promise((resolve, reject) => {
-      const tx   = db.transaction(STORE_NAME, 'readonly');
-      const req  = tx.objectStore(STORE_NAME).getAll();
-      req.onsuccess = e => resolve(e.target.result || []);
-      req.onerror   = e => reject(e.target.error);
-    });
-  } catch(e) {
-    console.error('IndexedDB load error:', e);
-    // Fallback: try legacy localStorage (migrate old data)
-    try { return JSON.parse(localStorage.getItem('aa-stories') || '[]'); }
-    catch(_) { return []; }
+async function upsertToSupabase(story) {
+  // Store only metadata + CDN URLs — no base64, so rows stay tiny (<2 KB each)
+  const res = await fetch(SB_URL + '/rest/v1/stories', {
+    method: 'POST',
+    headers: SB_HDR,
+    body: JSON.stringify({ id: story.id, data: story }),
+  });
+  if (!res.ok) {
+    const txt = await res.text().catch(() => '');
+    throw new Error('Supabase save failed ' + res.status + ': ' + txt.slice(0, 120));
   }
 }
 
-async function saveToDB(stories) {
-  try {
-    const db = await openDB();
-    return new Promise((resolve, reject) => {
-      const tx    = db.transaction(STORE_NAME, 'readwrite');
-      const store = tx.objectStore(STORE_NAME);
-      store.clear();
-      stories.forEach(s => {
-        if (!s.id) s.id = 'story_' + Date.now() + '_' + Math.random().toString(36).slice(2);
-        store.put(s);
-      });
-      tx.oncomplete = () => resolve();
-      tx.onerror    = e  => {
-        console.error('IndexedDB tx error:', e.target.error);
-        reject(e.target.error);
-      };
-    });
-  } catch(e) {
-    console.error('IndexedDB save error:', e);
-    // DOMException: QuotaExceededError — images too large for this browser's storage
-    if (e.name === 'QuotaExceededError' || (e.message && e.message.includes('quota'))) {
-      toast('⚠️ Storage full! Try using fewer panels or smaller images.');
-    } else {
-      toast('⚠️ Save failed: ' + (e.message || e.name || 'unknown error'));
-    }
-    throw e;
-  }
+async function deleteFromSupabase(storyId) {
+  const res = await fetch(
+    SB_URL + '/rest/v1/stories?id=eq.' + encodeURIComponent(storyId),
+    { method: 'DELETE', headers: SB_HDR }
+  );
+  if (!res.ok) throw new Error('Supabase delete failed: HTTP ' + res.status);
 }
 
 /* ─ Export all stories to a downloadable JSON backup file ─ */
@@ -877,15 +882,16 @@ function importStories() {
       try {
         const imported = JSON.parse(ev.target.result);
         if (!Array.isArray(imported)) throw new Error('Not a valid backup file');
-        // Merge: add stories not already present (by title)
         const titles = new Set(STORIES.map(s => s.title));
         const fresh  = imported.filter(s => !titles.has(s.title));
-        STORIES = [...STORIES, ...fresh];
-        await save();
+        for (const s of fresh) {
+          STORIES.push(s);
+          await upsertToSupabase(s);
+        }
         renderGrid();
         toast(`✅ Imported ${fresh.length} new stor${fresh.length===1?'y':'ies'}!`);
       } catch(err) {
-        toast('⚠️ Invalid backup file — could not import');
+        toast('⚠️ Import failed: ' + err.message);
         console.error(err);
       }
     };
@@ -895,8 +901,9 @@ function importStories() {
 }
 let editId = null;
 let storyType = 'comic';
-let pendingPanels = []; // [{dataUrl, caption}]
-let singleImgDataUrl = null;
+let pendingPanels = []; // [{file, preview, caption}]  file = File object
+let singleImgFile    = null;
+let singleImgPreview = null;
 
 // Viewer state
 let viewStory    = null;
@@ -931,7 +938,6 @@ function pickVoice(prefer) {
 function getStoryText() {
   if (!viewStory) return '';
   if (viewStory.type === 'comic') {
-    // join all panel captions
     return (viewStory.panels || []).map(p => p.caption || '').filter(Boolean).join('. ');
   }
   return viewStory.title + '. ' + (viewStory.content || '');
@@ -940,17 +946,12 @@ function getStoryText() {
 function speakAs(presetId) {
   const preset = STORYTELLERS.find(p => p.id === presetId);
   if (!preset) return;
-
-  // If same voice tapped again — stop
   if (activeChipId === presetId) { stopSpeaking(); return; }
-
   stopSpeaking();
   const text = getStoryText();
   if (!text.trim()) { toast('⚠️ No text to read in this story!'); return; }
-
   activeChipId = presetId;
-  renderVoiceChips(); // show speaking state
-
+  renderVoiceChips();
   const u = new SpeechSynthesisUtterance(text);
   u.rate  = preset.rate;
   u.pitch = preset.pitch;
@@ -974,9 +975,7 @@ function renderVoiceChips() {
       const isSpeaking = activeChipId === p.id;
       return `<button class="voice-chip${isSpeaking?' speaking':''}" onclick="speakAs('${p.id}')">${p.emoji} ${p.label}${isSpeaking?' 🔊':''}</button>`;
     }).join('');
-    if (activeChipId) {
-      html += `<button class="vc-stop" onclick="stopSpeaking()">⏹ Stop</button>`;
-    }
+    if (activeChipId) html += `<button class="vc-stop" onclick="stopSpeaking()">⏹ Stop</button>`;
     el.innerHTML = html;
   });
 }
@@ -985,11 +984,6 @@ function stopChipAudio() { stopSpeaking(); stopVoice(); }
 
 /* ═══════════════════════════════════════════════
    NARRATOR / RECORDING SYSTEM
-   PERSONS:    [{id, emoji, name}]
-   RECORDINGS: {personId_storySlug: dataUrl}
-   - Live mic recording via MediaRecorder
-   - MP3 / audio file uploads
-   - One recording per (person × story)
 ═══════════════════════════════════════════════ */
 let PERSONS    = JSON.parse(localStorage.getItem('aa-persons')    || '[]');
 let RECORDINGS = JSON.parse(localStorage.getItem('aa-recordings') || '{}');
@@ -1003,8 +997,6 @@ let playingPersonId = null;
 function savePersons()    { localStorage.setItem('aa-persons',    JSON.stringify(PERSONS)); }
 function saveRecordings() { localStorage.setItem('aa-recordings', JSON.stringify(RECORDINGS)); }
 
-/* Key is bound to the story TITLE (slug) so it follows the story even if reordered.
-   If no story is open we still allow recording — it goes under 'default'. */
 function recKey(personId) {
   const slug = viewStory
     ? viewStory.title.replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_]/g,'').slice(0,30)
@@ -1012,14 +1004,12 @@ function recKey(personId) {
   return personId + '_' + (slug || 'default');
 }
 
-/* ── Open / close narrator manager ── */
 function openVPM() {
   renderVpmList();
   document.getElementById('vpm-overlay').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
 function closeVPM() {
-  // Stop any in-progress recording cleanly when modal closes
   if (mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
   document.getElementById('vpm-overlay').classList.remove('open');
   document.body.style.overflow = '';
@@ -1027,7 +1017,6 @@ function closeVPM() {
 }
 function handleVpmBg(e){ if (e.target === document.getElementById('vpm-overlay')) closeVPM(); }
 
-/* ── Add / remove narrator ── */
 function addPerson() {
   const name  = document.getElementById('vpm-name-input').value.trim();
   const emoji = document.getElementById('vpm-emoji').value.trim() || '👤';
@@ -1058,7 +1047,6 @@ function deleteRec(key) {
   toast('🗑️ Recording deleted');
 }
 
-/* ── Render narrator list inside manager modal ── */
 function renderVpmList() {
   const el = document.getElementById('vpm-list');
   if (!PERSONS.length) {
@@ -1068,22 +1056,19 @@ function renderVpmList() {
   const currentSlug = viewStory
     ? viewStory.title.replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_]/g,'').slice(0,30)
     : 'default';
-
   el.innerHTML = PERSONS.map(p => {
-    // All recordings for this person, with the current story marked
     const recRows = Object.entries(RECORDINGS)
       .filter(([k]) => k.startsWith(p.id + '_'))
       .map(([k, url]) => {
-        const slug    = k.slice(p.id.length + 1);
-        const isHere  = slug === currentSlug;
-        const label   = slug.replace(/_/g,' ') || 'default';
+        const slug   = k.slice(p.id.length + 1);
+        const isHere = slug === currentSlug;
+        const label  = slug.replace(/_/g,' ') || 'default';
         return `<div style="display:flex;align-items:center;gap:.5rem">
           <span style="font-size:.72rem;font-weight:800;color:${isHere?'var(--orange)':'var(--soft)'};min-width:70px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(label)}">${isHere?'▶ ':''}${esc(label)}</span>
           <audio src="${url}" controls preload="none" style="flex:1;min-width:120px"></audio>
           <button class="vpm-del" onclick="deleteRec('${k}')" title="Delete recording">✕</button>
         </div>`;
       }).join('');
-
     return `<div class="vpm-item">
       <div class="vpm-item-head">
         <span style="font-size:1.3rem">${p.emoji}</span>
@@ -1100,24 +1085,15 @@ function renderVpmList() {
   }).join('');
 }
 
-/* ── Live mic recording ── */
 async function startRec(personId) {
   const btn = document.getElementById('rec-btn-' + personId);
-
-  // Toggle off if recording this same person
   if (mediaRecorder && mediaRecorder.state === 'recording' && recPersonId === personId) {
-    mediaRecorder.stop();
-    return;
+    mediaRecorder.stop(); return;
   }
-  // Stop any other ongoing recording first
   if (mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
-
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    recChunks   = [];
-    recPersonId = personId;
-    recStoryKey = recKey(personId);
-
+    recChunks = []; recPersonId = personId; recStoryKey = recKey(personId);
     mediaRecorder = new MediaRecorder(stream);
     mediaRecorder.ondataavailable = e => { if (e.data.size) recChunks.push(e.data); };
     mediaRecorder.onstop = () => {
@@ -1126,9 +1102,7 @@ async function startRec(personId) {
       const reader = new FileReader();
       reader.onload = ev => {
         RECORDINGS[recStoryKey] = ev.target.result;
-        saveRecordings();
-        renderVpmList();
-        renderPersonChips();
+        saveRecordings(); renderVpmList(); renderPersonChips();
         const name = PERSONS.find(p => p.id === personId)?.name || 'narrator';
         toast('✅ Recording saved for ' + name + '!');
       };
@@ -1137,7 +1111,6 @@ async function startRec(personId) {
       if (b) { b.classList.remove('recording'); b.textContent = '🎙️ Record'; }
       recPersonId = null;
     };
-
     mediaRecorder.start();
     if (btn) { btn.classList.add('recording'); btn.textContent = '⏹ Stop'; }
     toast('🔴 Recording… tap Stop when done');
@@ -1147,20 +1120,14 @@ async function startRec(personId) {
   }
 }
 
-/* ── Upload MP3 / audio file ── */
 function uploadRec(e, personId) {
   const f = e.target.files[0]; if (!f) return;
-  if (f.size > 15 * 1024 * 1024) {
-    toast('⚠️ File too big — please use audio under 15 MB');
-    e.target.value = ''; return;
-  }
+  if (f.size > 15 * 1024 * 1024) { toast('⚠️ File too big — under 15 MB please'); e.target.value = ''; return; }
   const key = recKey(personId);
   const reader = new FileReader();
   reader.onload = ev => {
     RECORDINGS[key] = ev.target.result;
-    saveRecordings();
-    renderVpmList();
-    renderPersonChips();
+    saveRecordings(); renderVpmList(); renderPersonChips();
     const name = PERSONS.find(p => p.id === personId)?.name || 'narrator';
     toast('📁 Audio uploaded for ' + name + '!');
   };
@@ -1169,7 +1136,6 @@ function uploadRec(e, personId) {
   e.target.value = '';
 }
 
-/* ── Render narrator chips in the story viewer ── */
 function renderPersonChips() {
   ['vw-persons','vw-persons2'].forEach(id => {
     const el = document.getElementById(id); if (!el) return;
@@ -1178,23 +1144,16 @@ function renderPersonChips() {
       return;
     }
     let chips = PERSONS.map(p => {
-      const key       = recKey(p.id);
-      const hasRec    = !!RECORDINGS[key];
+      const key = recKey(p.id);
+      const hasRec = !!RECORDINGS[key];
       const isPlaying = playingPersonId === p.id;
       let cls = 'person-chip';
       if (hasRec)    cls += ' has-rec';
       if (isPlaying) cls += ' playing';
-      const label = isPlaying
-        ? `${p.emoji} ${p.name} 🔊`
-        : `${p.emoji} ${p.name}${hasRec ? ' ▶' : ' +'}`;
-      const title = hasRec
-        ? 'Play recording for this story'
-        : 'No recording for this story yet — tap + Manage to record';
-      return `<button class="${cls}" onclick="playPerson('${p.id}')" title="${title}">${label}</button>`;
+      const label = isPlaying ? `${p.emoji} ${p.name} 🔊` : `${p.emoji} ${p.name}${hasRec?' ▶':' +'}`;
+      return `<button class="${cls}" onclick="playPerson('${p.id}')" title="${hasRec?'Play recording':'No recording yet'}">${label}</button>`;
     }).join('');
-    if (playingPersonId) {
-      chips += `<button class="vc-stop" onclick="stopVoice()">⏹ Stop</button>`;
-    }
+    if (playingPersonId) chips += `<button class="vc-stop" onclick="stopVoice()">⏹ Stop</button>`;
     el.innerHTML = chips;
   });
 }
@@ -1202,41 +1161,30 @@ function renderPersonChips() {
 function playPerson(personId) {
   const key = recKey(personId);
   const url = RECORDINGS[key];
-  if (!url) {
-    toast('No recording for this story yet — tap + Manage to add one');
-    return;
-  }
-  stopVoice();
-  stopSpeaking(); // also stop AI voice if running
-  playingPersonId = personId;
-  renderPersonChips();
+  if (!url) { toast('No recording for this story yet — tap + Manage to add one'); return; }
+  stopVoice(); stopSpeaking();
+  playingPersonId = personId; renderPersonChips();
   playingAudio = new Audio(url);
   playingAudio.play().catch(err => {
-    console.error(err);
-    toast('⚠️ Could not play audio');
-    playingPersonId = null;
-    renderPersonChips();
+    console.error(err); toast('⚠️ Could not play audio');
+    playingPersonId = null; renderPersonChips();
   });
-  playingAudio.onended = () => {
-    playingPersonId = null;
-    playingAudio = null;
-    renderPersonChips();
-  };
+  playingAudio.onended = () => { playingPersonId = null; playingAudio = null; renderPersonChips(); };
 }
 
 function stopVoice() {
   if (playingAudio) { playingAudio.pause(); playingAudio = null; }
-  playingPersonId = null;
-  renderPersonChips();
+  playingPersonId = null; renderPersonChips();
 }
 
+/* ── save: upsert all stories to Supabase ── */
 async function save() {
   try {
-    await saveToDB(STORIES);
+    await Promise.all(STORIES.map(s => upsertToSupabase(s)));
     updateStorageIndicator();
   } catch(e) {
-    // Error already toasted inside saveToDB — just stop propagation
-    console.error('save() caught:', e);
+    console.error('save() error:', e);
+    toast('⚠️ Cloud save failed: ' + e.message);
   }
 }
 
@@ -1472,70 +1420,48 @@ function setType(t) {
   document.getElementById('single-fields').style.display = t==='single' ? '' : 'none';
 }
 
-/* ── Image compression helper: resizes to max 900px wide, JPEG quality 0.75 ──
-   This keeps each image under ~200 KB instead of the raw 5–10 MB from camera,
-   which is why stories were failing to save (localStorage 5 MB limit). ── */
-function compressImage(file, maxDim, quality) {
-  maxDim  = maxDim  || 700;   // keep panels small — 700px wide is plenty for a story
-  quality = quality || 0.65;  // JPEG 65% — sharp enough, ~3x smaller than default
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onload = ev => {
-      const img = new Image();
-      img.onload = () => {
-        let w = img.width, h = img.height;
-        if (w > maxDim || h > maxDim) {
-          if (w > h) { h = Math.round(h * maxDim / w); w = maxDim; }
-          else       { w = Math.round(w * maxDim / h); h = maxDim; }
-        }
-        const canvas = document.createElement('canvas');
-        canvas.width = w; canvas.height = h;
-        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-        resolve(canvas.toDataURL('image/jpeg', quality));
-      };
-      img.src = ev.target.result;
-    };
-    reader.readAsDataURL(file);
-  });
-}
+/* ── Image helpers ── */
 
-/* add panel images — compress one at a time to stay within memory limits */
+/* addPanels: store File objects, show local previews immediately */
 async function addPanels(e) {
   const files = [...e.target.files];
   if (!files.length) return;
-  toast('⏳ Compressing images… (' + files.length + ' files)');
-  // Process sequentially to avoid out-of-memory on mobile
   for (const f of files) {
-    const dataUrl = await compressImage(f, 700, 0.65);
-    pendingPanels.push({ dataUrl, caption: '' });
-    renderPanelList(); // show progress as each completes
+    const preview = URL.createObjectURL(f);
+    pendingPanels.push({ file: f, preview, caption: '' });
   }
+  renderPanelList();
   e.target.value = '';
-  toast('✅ ' + files.length + ' image' + (files.length > 1 ? 's' : '') + ' added!');
+  toast('✅ ' + files.length + ' image' + (files.length > 1 ? 's' : '') + ' selected!');
 }
 
 function renderPanelList() {
-  document.getElementById('panels-list').innerHTML = pendingPanels.map((p,i) => `
+  document.getElementById('panels-list').innerHTML = pendingPanels.map((p, i) => `
     <div class="panel-row">
-      <img class="panel-thumb" src="${p.dataUrl}" alt="Panel ${i+1}">
+      <img class="panel-thumb" src="${p.preview || p.dataUrl || ''}" alt="Panel ${i+1}">
       <input class="panel-cap" type="text" placeholder="Caption for panel ${i+1}…"
         value="${esc(p.caption)}" oninput="pendingPanels[${i}].caption=this.value">
       <button class="panel-del" onclick="removePanel(${i})">✕</button>
     </div>`).join('');
 }
 
-function removePanel(i) { pendingPanels.splice(i,1); renderPanelList(); }
-
-/* single image */
-async function setSingleImg(e) {
-  const f = e.target.files[0]; if(!f) return;
-  toast('⏳ Compressing image…');
-  singleImgDataUrl = await compressImage(f, 1200, 0.80);
-  const img = document.getElementById('single-preview');
-  img.src = singleImgDataUrl; img.classList.add('show');
+function removePanel(i) {
+  if (pendingPanels[i].preview) URL.revokeObjectURL(pendingPanels[i].preview);
+  pendingPanels.splice(i, 1);
+  renderPanelList();
 }
 
-/* save */
+/* single image */
+function setSingleImg(e) {
+  const f = e.target.files[0]; if (!f) return;
+  if (singleImgPreview) URL.revokeObjectURL(singleImgPreview);
+  singleImgFile    = f;
+  singleImgPreview = URL.createObjectURL(f);
+  const img = document.getElementById('single-preview');
+  img.src = singleImgPreview; img.classList.add('show');
+}
+
+/* save: upload images to Cloudinary, then upsert metadata to Supabase */
 async function saveStory() {
   const title   = document.getElementById('f-title').value.trim();
   const preview = document.getElementById('f-preview').value.trim();
@@ -1544,25 +1470,60 @@ async function saveStory() {
   let story = { title, preview, type: storyType, featured: document.getElementById('f-featured').checked };
 
   if (storyType === 'comic') {
-    if (!pendingPanels.length) { toast('⚠️ Please upload at least one panel image!'); return; }
-    story.panels = pendingPanels.map(p=>({dataUrl:p.dataUrl, caption:p.caption||''}));
+    if (!pendingPanels.length) { toast('⚠️ Add at least one panel image!'); return; }
+    toast('☁️ Uploading ' + pendingPanels.length + ' image' + (pendingPanels.length > 1 ? 's' : '') + ' to Cloudinary…');
+    try {
+      story.panels = await Promise.all(pendingPanels.map(async (p, i) => {
+        // If already a CDN URL (editing existing story) — skip upload
+        const url = p.file ? await uploadToCloudinary(p.file) : (p.dataUrl || p.preview);
+        if (p.preview && p.file) URL.revokeObjectURL(p.preview);
+        toast('☁️ Uploaded ' + (i + 1) + ' / ' + pendingPanels.length + '…');
+        return { dataUrl: url, caption: p.caption || '' };
+      }));
+    } catch(err) {
+      toast('❌ ' + err.message);
+      console.error(err);
+      return;
+    }
   } else {
-    if (!singleImgDataUrl) { toast('⚠️ Please upload an image!'); return; }
-    story.image   = singleImgDataUrl;
+    if (!singleImgFile && !singleImgPreview) { toast('⚠️ Please add an image!'); return; }
+    if (singleImgFile) {
+      toast('☁️ Uploading image to Cloudinary…');
+      try {
+        story.image = await uploadToCloudinary(singleImgFile);
+        URL.revokeObjectURL(singleImgPreview);
+      } catch(err) {
+        toast('❌ ' + err.message);
+        console.error(err);
+        return;
+      }
+    } else {
+      story.image = singleImgPreview; // already a URL (editing)
+    }
     story.content = document.getElementById('f-content').value.trim();
   }
 
-  // Assign a stable id if new
+  story.createdAt = story.createdAt || new Date().toISOString();
+
   if (editId !== null) {
     story.id = STORIES[editId].id || ('story_' + Date.now());
     STORIES[editId] = story;
-    toast('✅ Story updated!');
+    toast('☁️ Saving to cloud…');
   } else {
     story.id = 'story_' + Date.now() + '_' + Math.random().toString(36).slice(2);
     STORIES.push(story);
-    toast('🎉 Story added!');
+    toast('☁️ Saving to cloud…');
   }
-  await save();
+
+  try {
+    await upsertToSupabase(story);
+    toast(editId !== null ? '✅ Story updated!' : '🎉 Story added!');
+  } catch(err) {
+    toast('❌ Cloud save failed: ' + err.message);
+    console.error(err);
+    return;
+  }
+
   resetForm();
   closeAdd();
   renderGrid();
@@ -1583,7 +1544,7 @@ function editStory(i) {
     pendingPanels = (s.panels||[]).map(p=>({dataUrl:p.dataUrl,caption:p.caption||''}));
     renderPanelList();
   } else {
-    singleImgDataUrl = s.image||null;
+    singleImgFile = null; singleImgPreview = s.image || null;
     if (s.image) { const img=document.getElementById('single-preview'); img.src=s.image; img.classList.add('show'); }
     document.getElementById('f-content').value = s.content||'';
   }
@@ -1593,14 +1554,16 @@ function editStory(i) {
 }
 
 async function deleteStory(i) {
-  if (!confirm(`Delete "${STORIES[i].title}"?`)) return;
-  STORIES.splice(i,1);
-  await save(); renderGrid(); renderMgrList();
+  if (!confirm('Delete "' + STORIES[i].title + '"?')) return;
+  const sid = STORIES[i].id;
+  STORIES.splice(i, 1);
+  try { await deleteFromSupabase(sid); } catch(e) { console.error(e); }
+  renderGrid(); renderMgrList();
   toast('🗑️ Story deleted');
 }
 
 function resetForm() {
-  storyType = 'comic'; pendingPanels = []; singleImgDataUrl = null; editId = null;
+  storyType = 'comic'; pendingPanels = []; singleImgFile = null; singleImgPreview = null; editId = null;
   document.getElementById('f-title').value = '';
   document.getElementById('f-preview').value = '';
   document.getElementById('f-featured').checked = false;
@@ -1954,58 +1917,24 @@ function showScannedStoryPreview(compact) {
 /* ═══════════════════════════════════════════════
    STORAGE SIZE INDICATOR
 ═══════════════════════════════════════════════ */
-async function updateStorageIndicator() {
+function updateStorageIndicator() {
   const el = document.getElementById('storage-indicator');
   if (!el) return;
-  if (navigator.storage && navigator.storage.estimate) {
-    const { usage, quota } = await navigator.storage.estimate();
-    const usedMB  = (usage  / 1024 / 1024).toFixed(1);
-    const quotaMB = Math.round(quota / 1024 / 1024);
-    const pct     = Math.round(usage / quota * 100);
-    el.textContent = `💾 ${usedMB} MB / ${quotaMB} MB used (${pct}%)`;
-    el.style.color = pct > 80 ? '#e44' : 'var(--soft)';
-  } else {
-    el.textContent = `📦 ${STORIES.length} stor${STORIES.length===1?'y':'ies'} saved`;
-  }
+  el.textContent = '☁️ ' + STORIES.length + ' stor' + (STORIES.length === 1 ? 'y' : 'ies') + ' synced · Images on Cloudinary CDN';
 }
 
-/* ═══════════════════════════════════════════════
-   MIGRATE old localStorage data to IndexedDB
-   (runs once, then localStorage is cleared)
-═══════════════════════════════════════════════ */
-async function migrateLocalStorage() {
-  const old = localStorage.getItem('aa-stories');
-  if (!old) return;
-  try {
-    const parsed = JSON.parse(old);
-    if (Array.isArray(parsed) && parsed.length > 0) {
-      // Assign ids if missing
-      parsed.forEach(s => { if (!s.id) s.id = 'story_' + Date.now() + '_' + Math.random().toString(36).slice(2); });
-      await saveToDB(parsed);
-      STORIES = parsed;
-      localStorage.removeItem('aa-stories'); // clean up
-      toast('✅ Your old stories have been migrated to the new storage system!');
-    }
-  } catch(e) { console.warn('Migration failed:', e); }
-}
 
-/* ═══════════════════════════════════════════════
-   INIT
-═══════════════════════════════════════════════ */
 (async function init() {
-  STORIES = await loadFromDB();
-
-  // Fresh browser / fresh device — seed from the baked-in stories
-  if (STORIES.length === 0 && SEED_STORIES.length > 0) {
-    STORIES = SEED_STORIES.map(s => ({
-      ...s,
-      id: s.id || ('story_' + Date.now() + '_' + Math.random().toString(36).slice(2))
-    }));
-    await saveToDB(STORIES);
+  // Load stories from Supabase cloud — works on any device, any browser
+  try {
+    STORIES = await loadFromSupabase();
+    STORIES.sort((a, b) => (a.createdAt || '').localeCompare(b.createdAt || ''));
+  } catch(e) {
+    console.error('Supabase load error:', e);
+    const grid = document.getElementById('story-grid');
+    if (grid) grid.innerHTML = '<div class="empty-state"><div class="big">⚠️</div><p style="color:#e44;font-weight:800">Could not connect to cloud: ' + e.message + '</p><p style="margin-top:.5rem;font-size:.85rem">Check your Supabase project is active.</p></div>';
+    STORIES = [];
   }
-
-  if (STORIES.length === 0) await migrateLocalStorage();
-
   renderGrid();
   updateStorageIndicator();
   handleDeepLink();
