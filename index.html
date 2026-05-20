@@ -738,6 +738,19 @@ async function save() {
   }
 }
 
+function updateStorageIndicator() {
+  const el = document.getElementById('storage-indicator');
+  if (!el) return;
+  const total     = STORIES.length;
+  const math      = STORIES.filter(s => s.section === 'math').length;
+  const colouring = STORIES.filter(s => s.section === 'coloring').length;
+  const stories   = total - math - colouring;
+  el.textContent  = '☁️ ' + stories + ' stor' + (stories === 1 ? 'y' : 'ies') +
+    (math      ? ' · ' + math      + ' math'      : '') +
+    (colouring ? ' · ' + colouring + ' colouring' : '') +
+    ' · Images on Cloudinary CDN';
+}
+
 /* ─ Export all stories to a downloadable JSON backup file ─ */
 function exportStories() {
   if (!STORIES.length) { toast('⚠️ No stories to export yet!'); return; }
