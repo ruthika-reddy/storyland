@@ -1122,10 +1122,7 @@ function stopVoice() {
 function renderGrid() {
   const grid = document.getElementById('story-grid');
   const sec   = SECTIONS.find(s => s.id === currentSection) || SECTIONS[0];
-  const items = STORIES.filter(item => {
-  const sec = (item.type === 'comic' || item.type === 'single') ? 'story' : (item.type || 'story');
-  return sec === currentSection;
-});
+  const items = STORIES.filter(item => (item.section || 'story') === currentSection);
 
   document.getElementById('story-count-label').textContent =
     items.length === 0 ? sec.label : items.length + ' ' + sec.label;
@@ -1481,6 +1478,7 @@ async function saveStory() {
       title,
       preview: document.getElementById('fm-preview').value.trim(),
       type: 'math',
+      section: 'math',
       problemImage: problemUrl,
       answerImage:  answerUrl,
       createdAt: new Date().toISOString()
@@ -1513,6 +1511,7 @@ async function saveStory() {
     const story = {
       title,
       type: 'coloring',
+      section: 'coloring',
       image: imageUrl,
       createdAt: new Date().toISOString()
     };
@@ -1536,7 +1535,7 @@ async function saveStory() {
   const preview = document.getElementById('f-preview').value.trim();
   if (!title) { toast('⚠️ Please add a title!'); return; }
 
-  let story = { title, preview, type: storyType, featured: document.getElementById('f-featured').checked };
+  let story = { title, preview, type: storyType, section: 'story', featured: document.getElementById('f-featured').checked };
 
   if (storyType === 'comic') {
     if (!pendingPanels.length) { toast('⚠️ Add at least one image!'); return; }
@@ -1588,7 +1587,7 @@ function editStory(i) {
   const s = STORIES[i];
   editId = i;
   document.getElementById('add-modal-title').textContent = '✏️ Edit';
-  const sType = s.type || 'story';
+  const sType = s.section || (s.type === 'math' ? 'math' : s.type === 'coloring' ? 'coloring' : 'story');
 
   if (sType === 'math') {
     setSection('math');
@@ -1663,7 +1662,7 @@ function renderMgrList() {
       ${thumb ? `<img class="mgr-thumb" src="${thumb}" alt="">` : `<div class="mgr-thumb">📖</div>`}
       <div class="mgr-info">
         <div class="mgr-ttl">${esc(s.title)}</div>
-        <div class="mgr-sub">${s.type==='math'?'🔢 Math':s.type==='coloring'?'🎨 Colouring':s.type==='comic'?`📖 ${(s.panels||[]).length} panels`:'🖼️ Image'}</div>
+        <div class="mgr-sub">${(s.section||s.type)==='math'?'🔢 Math':(s.section||s.type)==='coloring'?'🎨 Colouring':s.type==='comic'?`📖 ${(s.panels||[]).length} panels`:'🖼️ Image'}</div>
       </div>
       <div class="mgr-btns">
         <button class="btn btn-sm btn-outline" onclick="editStory(${i})">✏️</button>
@@ -1712,10 +1711,7 @@ function renderSectionTabs() {
   var el = document.getElementById('section-tabs');
   if (!el) return;
   el.innerHTML = SECTIONS.map(function(s) {
-  var count = STORIES.filter(function(item){
-  var sec = (item.type === 'comic' || item.type === 'single') ? 'story' : (item.type || 'story');
-  return sec === s.id;
-}).length;
+    var count  = STORIES.filter(function(item){ return (item.section || 'story') === s.id; }).length;
     var active = currentSection === s.id;
     var cls    = 'section-tab' + (active ? ' active' : '');
     return '<button class="' + cls + '" data-id="' + s.id + '" onclick="switchSection(this.dataset.id)">' +
