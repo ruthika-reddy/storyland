@@ -1480,6 +1480,7 @@ async function saveStory() {
     if (!title) { toast('Add a title!'); return; }
     if (!mathProblemFile && !mathProblemPreview) { toast('Upload a problem image!'); return; }
     if (!mathAnswerFile  && !mathAnswerPreview)  { toast('Upload an answer image!'); return; }
+    
     toast('Uploading images...');
     let problemUrl = mathProblemPreview;
     let answerUrl  = mathAnswerPreview;
@@ -1487,6 +1488,7 @@ async function saveStory() {
       if (mathProblemFile) problemUrl = await uploadToCloudinary(mathProblemFile);
       if (mathAnswerFile)  answerUrl  = await uploadToCloudinary(mathAnswerFile);
     } catch(err) { toast('Upload failed: ' + err.message); return; }
+    
     const story = {
       title,
       preview: document.getElementById('fm-preview').value.trim(),
@@ -1496,6 +1498,7 @@ async function saveStory() {
       answerImage:  answerUrl,
       createdAt: new Date().toISOString()
     };
+    
     if (editId !== null) {
       story.id = STORIES[editId].id || ('story_' + Date.now());
       story.createdAt = STORIES[editId].createdAt || story.createdAt;
@@ -1504,10 +1507,19 @@ async function saveStory() {
       story.id = 'story_' + Date.now() + '_' + Math.random().toString(36).slice(2);
       STORIES.push(story);
     }
-    try { await upsertToSupabase(story); toast(editId !== null ? '✅ Updated!' : '🎉 Math problem added!'); }
-    catch(err) { toast('Save failed: ' + err.message); return; }
-    resetForm(); closeAdd(); renderGrid(); renderMgrList(); renderSectionTabs();
-    editId = null; document.getElementById('add-modal-title').textContent = '➕ Add New';
+    
+    try { 
+      await upsertToSupabase(story); 
+      toast(editId !== null ? '✅ Updated!' : '🎉 Math problem added!'); 
+    } catch(err) { 
+      toast('Save failed: ' + err.message); 
+      return; 
+    }
+    
+    STORIES.sort((a, b) => (a.createdAt || '').localeCompare(b.createdAt || ''));
+    editId = null; renderGrid(); renderMgrList(); renderSectionTabs();
+    closeAdd(); resetForm();
+    document.getElementById('add-modal-title').textContent = '➕ Add New';
     return;
   }
 
@@ -1515,12 +1527,14 @@ async function saveStory() {
     const title = document.getElementById('fc-title').value.trim();
     if (!title) { toast('Add a title!'); return; }
     if (!coloringFile && !coloringPreview) { toast('Upload a coloring page image!'); return; }
+    
     let imageUrl = coloringPreview;
     if (coloringFile) {
       toast('Uploading image...');
       try { imageUrl = await uploadToCloudinary(coloringFile); }
       catch(err) { toast('Upload failed: ' + err.message); return; }
     }
+    
     const story = {
       title,
       type: 'coloring',
@@ -1528,6 +1542,7 @@ async function saveStory() {
       image: imageUrl,
       createdAt: new Date().toISOString()
     };
+    
     if (editId !== null) {
       story.id = STORIES[editId].id || ('story_' + Date.now());
       story.createdAt = STORIES[editId].createdAt || story.createdAt;
@@ -1536,14 +1551,23 @@ async function saveStory() {
       story.id = 'story_' + Date.now() + '_' + Math.random().toString(36).slice(2);
       STORIES.push(story);
     }
-    try { await upsertToSupabase(story); toast(editId !== null ? '✅ Updated!' : '🎉 Colouring page added!'); }
-    catch(err) { toast('Save failed: ' + err.message); return; }
-    resetForm(); closeAdd(); renderGrid(); renderMgrList(); renderSectionTabs();
-    editId = null; document.getElementById('add-modal-title').textContent = '➕ Add New';
+    
+    try { 
+      await upsertToSupabase(story); 
+      toast(editId !== null ? '✅ Updated!' : '🎉 Colouring page added!'); 
+    } catch(err) { 
+      toast('Save failed: ' + err.message); 
+      return; 
+    }
+    
+    STORIES.sort((a, b) => (a.createdAt || '').localeCompare(b.createdAt || ''));
+    editId = null; renderGrid(); renderMgrList(); renderSectionTabs();
+    closeAdd(); resetForm();
+    document.getElementById('add-modal-title').textContent = '➕ Add New';
     return;
   }
 
-  /* ── Story path (existing) ───────────────────────────────────── */
+  /* ── Story path (fixed) ───────────────────────────────────── */
   const title   = document.getElementById('f-title').value.trim();
   const preview = document.getElementById('f-preview').value.trim();
   if (!title) { toast('⚠️ Please add a title!'); return; }
@@ -1575,9 +1599,10 @@ async function saveStory() {
     story.content = document.getElementById('f-content').value.trim();
   }
 
-  // Assign a stable id if new
+  // Assign a stable ID and balance creation dates
   if (editId !== null) {
     story.id = STORIES[editId].id || ('story_' + Date.now());
+    story.createdAt = STORIES[editId].createdAt || new Date().toISOString();
     STORIES[editId] = story;
     toast('✅ Story updated!');
   } else {
@@ -1586,13 +1611,22 @@ async function saveStory() {
     STORIES.push(story);
     toast('🎉 Story added!');
   }
-  await save();
-  resetForm();
-  closeAdd();
+
+  // FIXED: Changed from broken 'await save()' to 'await upsertToSupabase(story)'
+  try {
+    await upsertToSupabase(story);
+  } catch(err) {
+    toast('Cloud save failed: ' + err.message);
+    return;
+  }
+
+  STORIES.sort((a, b) => (a.createdAt || '').localeCompare(b.createdAt || ''));
+  editId = null;
   renderGrid();
   renderMgrList();
   renderSectionTabs();
-  editId = null;
+  closeAdd();
+  resetForm();
   document.getElementById('add-modal-title').textContent = '➕ Add New';
 }
 
