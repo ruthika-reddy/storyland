@@ -1013,8 +1013,31 @@ function stopVoice() {
 }
 
 async function save() {
-  await saveToDB(STORIES);
-  updateStorageIndicator();
+  if (!STORIES.length) return;
+
+  try {
+    const rows = STORIES.map(s => ({
+      id: s.id,
+      data: JSON.parse(JSON.stringify(s))
+    }));
+
+    const res = await fetch(SB_URL + '/rest/v1/stories', {
+      method: 'POST',
+      headers: {
+        ...SB_HDR,
+        'Prefer': 'resolution=merge-duplicates'
+      },
+      body: JSON.stringify(rows)
+    });
+
+    if (!res.ok) {
+      toast('Cloud save failed — check connection');
+    }
+
+  } catch (e) {
+    console.error('save error:', e);
+    toast('Cloud save failed: ' + (e.message || e));
+  }
 }
 
 /* ═══════════════════════════════════════════════
