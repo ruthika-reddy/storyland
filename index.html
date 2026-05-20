@@ -1122,7 +1122,10 @@ function stopVoice() {
 function renderGrid() {
   const grid = document.getElementById('story-grid');
   const sec   = SECTIONS.find(s => s.id === currentSection) || SECTIONS[0];
-  const items = STORIES.filter(item => (item.type || 'story') === currentSection);
+  const items = STORIES.filter(item => {
+  const sec = (item.type === 'comic' || item.type === 'single') ? 'story' : (item.type || 'story');
+  return sec === currentSection;
+});
 
   document.getElementById('story-count-label').textContent =
     items.length === 0 ? sec.label : items.length + ' ' + sec.label;
@@ -1709,7 +1712,10 @@ function renderSectionTabs() {
   var el = document.getElementById('section-tabs');
   if (!el) return;
   el.innerHTML = SECTIONS.map(function(s) {
-    var count  = STORIES.filter(function(item){ return (item.type || 'story') === s.id; }).length;
+  var count = STORIES.filter(function(item){
+  var sec = (item.type === 'comic' || item.type === 'single') ? 'story' : (item.type || 'story');
+  return sec === s.id;
+}).length;
     var active = currentSection === s.id;
     var cls    = 'section-tab' + (active ? ' active' : '');
     return '<button class="' + cls + '" data-id="' + s.id + '" onclick="switchSection(this.dataset.id)">' +
