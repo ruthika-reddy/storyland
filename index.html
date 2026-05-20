@@ -274,28 +274,61 @@ nav{position:sticky;top:0;z-index:100;background:rgba(255,248,238,.95);backdrop-
 .qr-hint{font-size:.74rem;color:var(--soft);margin-top:.8rem;line-height:1.5;display:flex;align-items:center;justify-content:center;gap:.3rem}
 .qr-hint::before{content:'✨'}
 
+
+/* ── SECTION TABS ── */
+.section-tabs{max-width:1100px;margin:0 auto;padding:1.5rem 1.5rem .2rem;display:flex;gap:.65rem;flex-wrap:wrap}
+.section-tab{display:inline-flex;align-items:center;gap:.45rem;padding:.6rem 1.25rem;border-radius:50px;font-family:'Baloo 2',cursive;font-size:.92rem;font-weight:800;cursor:pointer;border:2.5px solid var(--border);background:var(--card);color:var(--soft);transition:all .2s;white-space:nowrap;box-shadow:var(--shadow)}
+.section-tab:hover{transform:translateY(-2px);border-color:var(--orange);color:var(--orange)}
+.section-tab.active[data-id="story"]{background:var(--orange);border-color:var(--orange);color:#fff;box-shadow:0 4px 14px rgba(255,107,53,.4)}
+.section-tab.active[data-id="math"]{background:var(--purple);border-color:var(--purple);color:#fff;box-shadow:0 4px 14px rgba(155,93,229,.4)}
+.section-tab.active[data-id="coloring"]{background:var(--pink);border-color:var(--pink);color:#fff;box-shadow:0 4px 14px rgba(255,105,180,.4)}
+.tab-count{background:rgba(255,255,255,.28);border-radius:50px;padding:.05rem .45rem;font-size:.72rem}
+.section-tab:not(.active) .tab-count{background:var(--border);color:var(--soft)}
+
+/* ── FLIP CARD (Math Problems) ── */
+.math-grid-wrap{max-width:1100px;margin:0 auto;padding:.5rem 1.5rem 3rem;display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1.5rem}
+.math-card-wrap{display:flex;flex-direction:column;gap:.55rem}
+.flip-card{height:220px;perspective:1000px;cursor:pointer;border-radius:20px}
+.flip-card-inner{position:relative;width:100%;height:100%;transition:transform .6s cubic-bezier(.4,.2,.2,1);transform-style:preserve-3d}
+.flip-card.flipped .flip-card-inner{transform:rotateY(180deg)}
+.flip-card-front,.flip-card-back{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:20px;overflow:hidden;box-shadow:var(--shadow)}
+.flip-card-back{transform:rotateY(180deg);background:linear-gradient(135deg,#06D6A0,#04a87e)}
+.flip-card-front img,.flip-card-back img{width:100%;height:100%;object-fit:cover}
+.flip-card:hover .flip-card-front{box-shadow:var(--shadow-lg)}
+.flip-label{position:absolute;bottom:.6rem;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.62);color:#fff;border-radius:50px;padding:.22rem .85rem;font-size:.7rem;font-weight:800;white-space:nowrap;pointer-events:none}
+.flip-hint{font-size:.75rem;color:var(--soft);text-align:center;font-weight:700}
+.math-title{font-family:'Baloo 2',cursive;font-size:.95rem;font-weight:800;color:var(--purple);padding:.1rem 0}
+.math-card-actions{display:flex;gap:.4rem;justify-content:flex-end}
+
+/* ── COLORING CARDS ── */
+.color-card{background:var(--card);border-radius:20px;overflow:hidden;box-shadow:var(--shadow);cursor:pointer;transition:transform .22s,box-shadow .22s;border:2px solid transparent}
+.color-card:hover{transform:translateY(-6px);box-shadow:var(--shadow-lg);border-color:var(--border)}
+.color-card-img{height:200px;overflow:hidden;background:#f0e8d8;position:relative}
+.color-card-img img{width:100%;height:100%;object-fit:cover;transition:transform .38s}
+.color-card:hover .color-card-img img{transform:scale(1.06)}
+.color-card-body{padding:1rem 1.1rem 1.1rem}
+.color-card-title{font-family:'Baloo 2',cursive;font-size:1rem;font-weight:800;color:var(--pink);margin-bottom:.55rem}
+.btn-pink{background:var(--pink)!important;color:#fff!important;box-shadow:0 4px 14px rgba(255,105,180,.38)!important}
+
+/* ── SECTION TYPE SELECTOR in add modal ── */
+.sec-type-row{display:flex;gap:.5rem;margin-bottom:1rem}
+.sec-type-opt{flex:1;padding:.5rem .6rem;border-radius:12px;border:2px solid var(--border);background:var(--card);font-weight:800;font-size:.82rem;cursor:pointer;text-align:center;transition:all .2s;color:var(--soft);font-family:'Nunito',sans-serif}
+.sec-type-opt.on[data-sec="story"]{background:var(--orange);border-color:var(--orange);color:#fff}
+.sec-type-opt.on[data-sec="math"]{background:var(--purple);border-color:var(--purple);color:#fff}
+.sec-type-opt.on[data-sec="coloring"]{background:var(--pink);border-color:var(--pink);color:#fff}
+
+/* ── PRINT OVERRIDES for math/coloring ── */
+@media print{
+  .flip-card-back,.math-card-actions,.flip-hint,.flip-label,.color-card-body .card-footer,
+  .section-tabs{display:none!important}
+  .flip-card-inner{transform:none!important}
+  .flip-card-front{position:static!important;backface-visibility:visible!important;-webkit-backface-visibility:visible!important;transform:none!important;height:auto}
+  .flip-card{height:auto}
+  .math-grid-wrap{padding:0}
+}
 /* ── TOAST ── */
 .toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(100px);background:var(--ink);color:#fff;padding:.65rem 1.5rem;border-radius:50px;font-size:.88rem;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.3);z-index:500;transition:transform .3s;white-space:nowrap}
 .toast.show{transform:translateX(-50%) translateY(0)}
-
-/* ── GITHUB SETTINGS MODAL ── */
-.gh-overlay{position:fixed;inset:0;background:rgba(0,0,0,.68);z-index:350;display:none;align-items:center;justify-content:center;padding:1rem}
-.gh-overlay.open{display:flex}
-.gh-box{background:var(--bg);border-radius:24px;width:100%;max-width:500px;box-shadow:0 24px 80px rgba(0,0,0,.45);overflow:hidden}
-.gh-head{background:linear-gradient(135deg,#06D6A0,#04a87e);color:#fff;padding:1.1rem 1.5rem;display:flex;align-items:center;justify-content:space-between}
-.gh-head h2{font-size:1.1rem;font-weight:800}
-.gh-body{padding:1.4rem 1.5rem 1.6rem;display:flex;flex-direction:column;gap:.85rem}
-.gh-field label{display:block;font-size:.78rem;font-weight:800;color:var(--soft);margin-bottom:.28rem}
-.gh-field input{width:100%;padding:.5rem .85rem;border-radius:10px;border:2px solid var(--border);background:var(--card);color:var(--ink);font-family:'Nunito',sans-serif;font-size:.88rem;font-weight:600;outline:none;transition:border-color .2s}
-.gh-field input:focus{border-color:#06D6A0}
-.gh-hint{font-size:.76rem;color:var(--soft);line-height:1.55;background:rgba(6,214,160,.08);border-radius:10px;padding:.6rem .9rem;border:1.5px solid rgba(6,214,160,.22)}
-.gh-actions{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.3rem}
-.gh-save-btn{padding:.5rem 1.3rem;border-radius:50px;background:#06D6A0;color:#fff;border:none;font-weight:800;font-size:.88rem;cursor:pointer;font-family:'Nunito',sans-serif;transition:transform .15s,box-shadow .15s;box-shadow:0 4px 14px rgba(6,214,160,.38)}
-.gh-save-btn:hover{transform:translateY(-1px)}
-.gh-cancel-btn{padding:.5rem 1.1rem;border-radius:50px;background:transparent;color:var(--soft);border:2px solid var(--border);font-weight:800;font-size:.88rem;cursor:pointer;font-family:'Nunito',sans-serif}
-.gh-publish-status{font-size:.82rem;font-weight:700;padding:.45rem .85rem;border-radius:8px;display:none}
-.gh-publish-status.ok{background:rgba(6,214,160,.12);color:#04a87e;display:block}
-.gh-publish-status.err{background:rgba(255,60,60,.1);color:#e44;display:block}
 
 /* ── FOOTER ── */
 footer{text-align:center;padding:2rem 1rem;color:var(--soft);font-size:.85rem;border-top:2px solid var(--border)}
@@ -320,7 +353,6 @@ footer{text-align:center;padding:2rem 1rem;color:var(--soft);font-size:.85rem;bo
       <button class="btn btn-teal btn-sm" onclick="openBookletPrint()">🖨️ Print All</button>
       <button class="btn btn-outline btn-sm" onclick="exportStories()" title="Save stories as a backup file">📦 Backup</button>
       <button class="btn btn-outline btn-sm" onclick="importStories()" title="Restore stories from backup">📥 Restore</button>
-      <button class="btn btn-sm" style="background:linear-gradient(135deg,#06D6A0,#04a87e);color:#fff;box-shadow:0 4px 14px rgba(6,214,160,.38)" onclick="publishSite()" title="Bake stories into a new HTML file for deployment">📤 Publish</button>
       <button class="icon-btn" id="theme-btn" onclick="toggleTheme()" title="Dark mode">🌙</button>
     </div>
   </div>
@@ -338,6 +370,9 @@ footer{text-align:center;padding:2rem 1rem;color:var(--soft);font-size:.85rem;bo
 </div>
 
 <!-- STORIES GRID -->
+<!-- SECTION TABS -->
+<div class="section-tabs" id="section-tabs"></div>
+
 <div class="section-head" id="stories-section">
   <h2 id="story-count-label">Stories</h2>
   <div style="display:flex;gap:.5rem">
@@ -429,6 +464,19 @@ footer{text-align:center;padding:2rem 1rem;color:var(--soft);font-size:.85rem;bo
     </div>
     <div class="add-body">
 
+      <!-- Section type -->
+      <div class="fg">
+        <label>Section</label>
+        <div class="sec-type-row">
+          <div class="sec-type-opt on" id="sec-story"    data-sec="story"    onclick="setSection('story')">📚 Story</div>
+          <div class="sec-type-opt"    id="sec-math"     data-sec="math"     onclick="setSection('math')">🔢 Math</div>
+          <div class="sec-type-opt"    id="sec-coloring" data-sec="coloring" onclick="setSection('coloring')">🎨 Colouring</div>
+        </div>
+      </div>
+
+      <!-- Story fields wrap -->
+      <div id="story-fields-wrap">
+
       <!-- Story type -->
       <div class="fg">
         <label>Story Type</label>
@@ -486,8 +534,59 @@ footer{text-align:center;padding:2rem 1rem;color:var(--soft);font-size:.85rem;bo
         <label><input type="checkbox" id="f-featured" style="width:auto;margin-right:.4rem"> Mark as Featured ⭐</label>
       </div>
 
+      </div><!-- /story-fields-wrap -->
+
+      <!-- Math fields -->
+      <div id="math-fields" style="display:none">
+        <div class="frow">
+          <div class="fg">
+            <label>Story Title *</label>
+            <input type="text" id="fm-title" placeholder="e.g. Addition Fun">
+          </div>
+          <div class="fg">
+            <label>Short Preview</label>
+            <input type="text" id="fm-preview" placeholder="What is this problem about…">
+          </div>
+        </div>
+        <div class="fg">
+          <label>Problem Image * <span style="color:var(--soft)">(the question)</span></label>
+          <div class="drop-area" onclick="document.getElementById('math-problem-input').click()">
+            <div>🔢 Upload problem image</div>
+            <div class="drop-hint">JPG · PNG · WebP</div>
+            <input type="file" id="math-problem-input" accept="image/*" onchange="setMathProblem(event)">
+            <img id="math-problem-preview" class="cover-preview" alt="">
+          </div>
+        </div>
+        <div class="fg">
+          <label>Answer Image * <span style="color:var(--soft)">(revealed on flip)</span></label>
+          <div class="drop-area" onclick="document.getElementById('math-answer-input').click()">
+            <div>✅ Upload answer image</div>
+            <div class="drop-hint">JPG · PNG · WebP</div>
+            <input type="file" id="math-answer-input" accept="image/*" onchange="setMathAnswer(event)">
+            <img id="math-answer-preview" class="cover-preview" alt="">
+          </div>
+        </div>
+      </div>
+
+      <!-- Coloring fields -->
+      <div id="coloring-fields" style="display:none">
+        <div class="fg">
+          <label>Title *</label>
+          <input type="text" id="fc-title" placeholder="e.g. Happy Bunny">
+        </div>
+        <div class="fg">
+          <label>Coloring Page Image * <span style="color:var(--soft)">(B&amp;W outline works best)</span></label>
+          <div class="drop-area" onclick="document.getElementById('coloring-input').click()">
+            <div>🎨 Upload coloring page</div>
+            <div class="drop-hint">JPG · PNG · WebP</div>
+            <input type="file" id="coloring-input" accept="image/*" onchange="setColoringImg(event)">
+            <img id="coloring-preview" class="cover-preview" alt="">
+          </div>
+        </div>
+      </div>
+
       <div class="form-actions">
-        <button class="btn btn-orange btn-sm" onclick="saveStory()">💾 Save Story</button>
+        <button class="btn btn-orange btn-sm" onclick="saveStory()">💾 Save</button>
         <button class="btn btn-sm btn-outline" onclick="resetForm()">✕ Clear</button>
       </div>
 
@@ -560,47 +659,6 @@ footer{text-align:center;padding:2rem 1rem;color:var(--soft);font-size:.85rem;bo
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════
-     GITHUB PUBLISH SETTINGS MODAL
-════════════════════════════════════════ -->
-<div class="gh-overlay" id="gh-overlay" onclick="handleGhBg(event)">
-  <div class="gh-box">
-    <div class="gh-head">
-      <h2>🚀 Publish to GitHub Pages</h2>
-      <button class="add-close" onclick="closeGhModal()">✕</button>
-    </div>
-    <div class="gh-body">
-      <div class="gh-hint">
-        Enter your GitHub details once — then every time you hit <strong>📤 Publish</strong> your stories go live automatically, no uploading needed!
-      </div>
-      <div class="gh-field">
-        <label>GitHub Username</label>
-        <input type="text" id="gh-username" placeholder="e.g. advimom" autocomplete="off" spellcheck="false">
-      </div>
-      <div class="gh-field">
-        <label>Repository Name</label>
-        <input type="text" id="gh-repo" placeholder="e.g. advi-avi-stories" autocomplete="off" spellcheck="false">
-      </div>
-      <div class="gh-field">
-        <label>Branch (usually <code>main</code> or <code>gh-pages</code>)</label>
-        <input type="text" id="gh-branch" placeholder="main" autocomplete="off" spellcheck="false">
-      </div>
-      <div class="gh-field">
-        <label>Personal Access Token <span style="font-weight:600;opacity:.75">(needs <code>repo</code> scope)</span></label>
-        <input type="password" id="gh-token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false">
-      </div>
-      <div class="gh-hint" style="font-size:.73rem">
-        🔑 Get a token at <strong>github.com → Settings → Developer settings → Personal access tokens → Tokens (classic)</strong> — enable the <strong>repo</strong> checkbox. Your token is stored only in this browser (localStorage).
-      </div>
-      <div id="gh-status" class="gh-publish-status"></div>
-      <div class="gh-actions">
-        <button class="gh-save-btn" id="gh-publish-btn" onclick="doGithubPublish()">📤 Save &amp; Publish Now</button>
-        <button class="gh-cancel-btn" onclick="closeGhModal()">Cancel</button>
-      </div>
-    </div>
-  </div>
-</div>
-
 <div class="toast" id="toast"></div>
 
 <script>
@@ -609,213 +667,25 @@ footer{text-align:center;padding:2rem 1rem;color:var(--soft);font-size:.85rem;bo
 ═══════════════════════════════════════════════ */
 let STORIES = [];
 
+/* ── Multi-section system ────────────────────────────────────────── */
+const SECTIONS = [
+  { id: 'story',    label: 'Stories',        icon: '📚' },
+  { id: 'math',     label: 'Math Problems',  icon: '🔢' },
+  { id: 'coloring', label: 'Colouring Pages',icon: '🎨' }
+];
+let currentSection     = 'story';  // which tab is active
+let currentSectionType = 'story';  // which section is selected in the add form
+
+/* ── Math / Coloring form state ─────────────────────────────────── */
+let mathProblemFile = null, mathProblemPreview = null;
+let mathAnswerFile  = null, mathAnswerPreview  = null;
+let coloringFile    = null, coloringPreview    = null;
+
 /* ═══════════════════════════════════════════════════════════════════
-   SEED STORIES — hardcoded by the "Publish Site" button.
-   Anyone who opens the link sees these stories immediately.
-   DO NOT edit manually — use the 📤 Publish button instead.
+   SUPABASE — shared cloud database. Safe public anon key by design.
+   Stories added here appear for everyone instantly, no publish needed.
 ═══════════════════════════════════════════════════════════════════ */
-/* __STORIES_START__ */const SEED_STORIES = [];/* __STORIES_END__ */
-
-/* ═══════════════════════════════════════════════
-   PUBLISH SITE → GitHub Pages (direct push, no upload)
-   Opens a settings modal the first time, then on
-   subsequent clicks it publishes instantly.
-═══════════════════════════════════════════════ */
-
-// ── GitHub settings helpers ──────────────────
-const GH_KEYS = { user:'gh_user', repo:'gh_repo', branch:'gh_branch', token:'gh_token' };
-
-function ghLoad() {
-  return {
-    user:   localStorage.getItem(GH_KEYS.user)   || '',
-    repo:   localStorage.getItem(GH_KEYS.repo)   || '',
-    branch: localStorage.getItem(GH_KEYS.branch) || 'main',
-    token:  localStorage.getItem(GH_KEYS.token)  || '',
-  };
-}
-function ghSave(cfg) {
-  localStorage.setItem(GH_KEYS.user,   cfg.user.trim());
-  localStorage.setItem(GH_KEYS.repo,   cfg.repo.trim());
-  localStorage.setItem(GH_KEYS.branch, cfg.branch.trim() || 'main');
-  localStorage.setItem(GH_KEYS.token,  cfg.token.trim());
-}
-
-// ── Open / close GitHub modal ────────────────
-function openGhModal() {
-  const cfg = ghLoad();
-  document.getElementById('gh-username').value = cfg.user;
-  document.getElementById('gh-repo').value     = cfg.repo;
-  document.getElementById('gh-branch').value   = cfg.branch;
-  document.getElementById('gh-token').value    = cfg.token;
-  setGhStatus('', '');
-  document.getElementById('gh-overlay').classList.add('open');
-}
-function closeGhModal() {
-  document.getElementById('gh-overlay').classList.remove('open');
-}
-function handleGhBg(e) {
-  if (e.target === document.getElementById('gh-overlay')) closeGhModal();
-}
-function setGhStatus(msg, type) {
-  const el = document.getElementById('gh-status');
-  el.textContent = msg;
-  el.className = 'gh-publish-status' + (type ? ' ' + type : '');
-}
-
-// ── Build the baked HTML string ──────────────
-async function buildPublishHTML() {
-  // Fetch the live source of this page
-  const res = await fetch(location.pathname + '?nocache=' + Date.now());
-  if (!res.ok) throw new Error('Could not fetch page source (' + res.status + ')');
-  let html = await res.text();
-
-  const storiesJSON = JSON.stringify(STORIES).replace(/<\//g, '<\\/');
-  const marker_re = /\/\* __STORIES_START__ \*\/[\s\S]*?\/\* __STORIES_END__ \*\//;
-  const updated = html.replace(
-    marker_re,
-    '/* __STORIES_START__ */const SEED_STORIES = ' + storiesJSON + ';/* __STORIES_END__ */'
-  );
-  if (updated === html) throw new Error('Story markers not found — has the file been modified?');
-  return updated;
-}
-
-// ── Push to GitHub via REST API ──────────────
-async function pushToGitHub(cfg, content) {
-  const apiBase = 'https://api.github.com/repos/' + cfg.user + '/' + cfg.repo;
-  const filePath = 'index.html';
-  const headers = {
-    'Authorization': 'token ' + cfg.token,
-    'Accept': 'application/vnd.github+json',
-    'Content-Type': 'application/json',
-  };
-
-  // 1. Get current file SHA (needed for update)
-  let sha = null;
-  const getRes = await fetch(apiBase + '/contents/' + filePath + '?ref=' + cfg.branch, { headers });
-  if (getRes.ok) {
-    const data = await getRes.json();
-    sha = data.sha;
-  } else if (getRes.status !== 404) {
-    const err = await getRes.json().catch(() => ({}));
-    throw new Error('GitHub API error ' + getRes.status + ': ' + (err.message || 'unknown'));
-  }
-
-  // 2. Base64-encode the HTML
-  const b64 = btoa(unescape(encodeURIComponent(content)));
-
-  // 3. Commit (create or update)
-  const body = {
-    message: '📚 Publish stories — ' + new Date().toLocaleString(),
-    content: b64,
-    branch: cfg.branch,
-  };
-  if (sha) body.sha = sha;
-
-  const putRes = await fetch(apiBase + '/contents/' + filePath, {
-    method: 'PUT',
-    headers,
-    body: JSON.stringify(body),
-  });
-
-  if (!putRes.ok) {
-    const err = await putRes.json().catch(() => ({}));
-    throw new Error('GitHub push failed ' + putRes.status + ': ' + (err.message || 'unknown'));
-  }
-  return 'https://' + cfg.user + '.github.io/' + cfg.repo + '/';
-}
-
-// ── Called by Publish button in modal ────────
-async function doGithubPublish() {
-  const cfg = {
-    user:   document.getElementById('gh-username').value.trim(),
-    repo:   document.getElementById('gh-repo').value.trim(),
-    branch: document.getElementById('gh-branch').value.trim() || 'main',
-    token:  document.getElementById('gh-token').value.trim(),
-  };
-
-  if (!cfg.user || !cfg.repo || !cfg.token) {
-    setGhStatus('⚠️ Please fill in username, repo, and token.', 'err');
-    return;
-  }
-
-  ghSave(cfg);  // Remember settings for next time
-
-  const btn = document.getElementById('gh-publish-btn');
-  btn.disabled = true;
-  btn.textContent = '⏳ Publishing…';
-  setGhStatus('Building your site…', '');
-
-  try {
-    const html = await buildPublishHTML();
-    setGhStatus('Pushing to GitHub…', '');
-    const liveUrl = await pushToGitHub(cfg, html);
-    setGhStatus('✅ Published! Live at: ' + liveUrl, 'ok');
-    toast('🎉 Stories published to GitHub Pages!');
-  } catch (err) {
-    console.error('GitHub publish error:', err);
-    setGhStatus('❌ ' + err.message, 'err');
-    toast('Publish failed — see details in the modal.');
-  } finally {
-    btn.disabled = false;
-    btn.textContent = '📤 Save & Publish Now';
-  }
-}
-
-// ── Main entry point from nav button ─────────
-function publishSite() {
-  if (!STORIES.length) {
-    toast('No stories yet — add some first!');
-    return;
-  }
-  if (location.protocol === 'file:') {
-    alert(
-      'You\'re opening the file locally.\n\n' +
-      'To use one-click publish:\n' +
-      '1. Deploy this index.html to GitHub Pages first (just drag it onto your repo).\n' +
-      '2. Open the live github.io URL.\n' +
-      '3. Add your stories there, then tap 📤 Publish — they go live instantly!'
-    );
-    return;
-  }
-  openGhModal();
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   CLOUDINARY — image uploads
-   Unsigned preset — safe to embed by design.
-   Images upload to CDN; we store permanent HTTPS URLs in Supabase.
-═══════════════════════════════════════════════════════════════ */
-const CL_CLOUD  = 'duhvadrwq';
-const CL_PRESET = 'storyland_upload';
-
-async function uploadToCloudinary(file) {
-  const fd = new FormData();
-  fd.append('file', file);
-  fd.append('upload_preset', CL_PRESET);
-  const res = await fetch(
-    'https://api.cloudinary.com/v1_1/' + CL_CLOUD + '/image/upload',
-    { method: 'POST', body: fd }
-  );
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error('Image upload failed (' + res.status + '): ' + (err.error?.message || res.statusText));
-  }
-  const data = await res.json();
-  return data.secure_url;   // permanent CDN URL — stored in Supabase
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   SUPABASE — story metadata sync (real-time across all devices)
-   Table schema (run once in Supabase SQL Editor):
-     create table if not exists stories (
-       id text primary key,
-       data jsonb not null,
-       updated_at timestamptz default now()
-     );
-     alter table stories enable row level security;
-     drop policy if exists "public" on stories;
-     create policy "public" on stories for all using (true) with check (true);
-═══════════════════════════════════════════════════════════════ */
+/* ── Supabase — plain fetch (no SDK, no postMessage, no DataCloneError) ─── */
 const SB_URL = 'https://ddnztvtohxkuixrmzbac.supabase.co';
 const SB_KEY = 'sb_publishable_180pM3qus1rhPFEUSNPF4Q_u2-SLJbl';
 const SB_HDR = {
@@ -838,7 +708,6 @@ async function loadFromSupabase() {
 }
 
 async function upsertToSupabase(story) {
-  // Store only metadata + CDN URLs — no base64, so rows stay tiny (<2 KB each)
   const res = await fetch(SB_URL + '/rest/v1/stories', {
     method: 'POST',
     headers: SB_HDR,
@@ -856,6 +725,17 @@ async function deleteFromSupabase(storyId) {
     { method: 'DELETE', headers: SB_HDR }
   );
   if (!res.ok) throw new Error('Supabase delete failed: HTTP ' + res.status);
+}
+
+/* Save (upsert) all stories to Supabase */
+async function save() {
+  try {
+    await Promise.all(STORIES.map(s => upsertToSupabase(s)));
+    updateStorageIndicator();
+  } catch(e) {
+    console.error('save() error:', e);
+    toast('Cloud save failed: ' + e.message);
+  }
 }
 
 /* ─ Export all stories to a downloadable JSON backup file ─ */
@@ -882,16 +762,15 @@ function importStories() {
       try {
         const imported = JSON.parse(ev.target.result);
         if (!Array.isArray(imported)) throw new Error('Not a valid backup file');
+        // Merge: add stories not already present (by title)
         const titles = new Set(STORIES.map(s => s.title));
         const fresh  = imported.filter(s => !titles.has(s.title));
-        for (const s of fresh) {
-          STORIES.push(s);
-          await upsertToSupabase(s);
-        }
+        STORIES = [...STORIES, ...fresh];
+        await save();
         renderGrid();
         toast(`✅ Imported ${fresh.length} new stor${fresh.length===1?'y':'ies'}!`);
       } catch(err) {
-        toast('⚠️ Import failed: ' + err.message);
+        toast('⚠️ Invalid backup file — could not import');
         console.error(err);
       }
     };
@@ -901,7 +780,7 @@ function importStories() {
 }
 let editId = null;
 let storyType = 'comic';
-let pendingPanels = []; // [{file, preview, caption}]  file = File object
+let pendingPanels = []; // [{file,preview,caption}] file=File obj, preview=objectURL
 let singleImgFile    = null;
 let singleImgPreview = null;
 
@@ -938,6 +817,7 @@ function pickVoice(prefer) {
 function getStoryText() {
   if (!viewStory) return '';
   if (viewStory.type === 'comic') {
+    // join all panel captions
     return (viewStory.panels || []).map(p => p.caption || '').filter(Boolean).join('. ');
   }
   return viewStory.title + '. ' + (viewStory.content || '');
@@ -946,12 +826,17 @@ function getStoryText() {
 function speakAs(presetId) {
   const preset = STORYTELLERS.find(p => p.id === presetId);
   if (!preset) return;
+
+  // If same voice tapped again — stop
   if (activeChipId === presetId) { stopSpeaking(); return; }
+
   stopSpeaking();
   const text = getStoryText();
   if (!text.trim()) { toast('⚠️ No text to read in this story!'); return; }
+
   activeChipId = presetId;
-  renderVoiceChips();
+  renderVoiceChips(); // show speaking state
+
   const u = new SpeechSynthesisUtterance(text);
   u.rate  = preset.rate;
   u.pitch = preset.pitch;
@@ -975,7 +860,9 @@ function renderVoiceChips() {
       const isSpeaking = activeChipId === p.id;
       return `<button class="voice-chip${isSpeaking?' speaking':''}" onclick="speakAs('${p.id}')">${p.emoji} ${p.label}${isSpeaking?' 🔊':''}</button>`;
     }).join('');
-    if (activeChipId) html += `<button class="vc-stop" onclick="stopSpeaking()">⏹ Stop</button>`;
+    if (activeChipId) {
+      html += `<button class="vc-stop" onclick="stopSpeaking()">⏹ Stop</button>`;
+    }
     el.innerHTML = html;
   });
 }
@@ -984,6 +871,11 @@ function stopChipAudio() { stopSpeaking(); stopVoice(); }
 
 /* ═══════════════════════════════════════════════
    NARRATOR / RECORDING SYSTEM
+   PERSONS:    [{id, emoji, name}]
+   RECORDINGS: {personId_storySlug: dataUrl}
+   - Live mic recording via MediaRecorder
+   - MP3 / audio file uploads
+   - One recording per (person × story)
 ═══════════════════════════════════════════════ */
 let PERSONS    = JSON.parse(localStorage.getItem('aa-persons')    || '[]');
 let RECORDINGS = JSON.parse(localStorage.getItem('aa-recordings') || '{}');
@@ -997,6 +889,8 @@ let playingPersonId = null;
 function savePersons()    { localStorage.setItem('aa-persons',    JSON.stringify(PERSONS)); }
 function saveRecordings() { localStorage.setItem('aa-recordings', JSON.stringify(RECORDINGS)); }
 
+/* Key is bound to the story TITLE (slug) so it follows the story even if reordered.
+   If no story is open we still allow recording — it goes under 'default'. */
 function recKey(personId) {
   const slug = viewStory
     ? viewStory.title.replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_]/g,'').slice(0,30)
@@ -1004,12 +898,14 @@ function recKey(personId) {
   return personId + '_' + (slug || 'default');
 }
 
+/* ── Open / close narrator manager ── */
 function openVPM() {
   renderVpmList();
   document.getElementById('vpm-overlay').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
 function closeVPM() {
+  // Stop any in-progress recording cleanly when modal closes
   if (mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
   document.getElementById('vpm-overlay').classList.remove('open');
   document.body.style.overflow = '';
@@ -1017,6 +913,7 @@ function closeVPM() {
 }
 function handleVpmBg(e){ if (e.target === document.getElementById('vpm-overlay')) closeVPM(); }
 
+/* ── Add / remove narrator ── */
 function addPerson() {
   const name  = document.getElementById('vpm-name-input').value.trim();
   const emoji = document.getElementById('vpm-emoji').value.trim() || '👤';
@@ -1047,6 +944,7 @@ function deleteRec(key) {
   toast('🗑️ Recording deleted');
 }
 
+/* ── Render narrator list inside manager modal ── */
 function renderVpmList() {
   const el = document.getElementById('vpm-list');
   if (!PERSONS.length) {
@@ -1056,19 +954,22 @@ function renderVpmList() {
   const currentSlug = viewStory
     ? viewStory.title.replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_]/g,'').slice(0,30)
     : 'default';
+
   el.innerHTML = PERSONS.map(p => {
+    // All recordings for this person, with the current story marked
     const recRows = Object.entries(RECORDINGS)
       .filter(([k]) => k.startsWith(p.id + '_'))
       .map(([k, url]) => {
-        const slug   = k.slice(p.id.length + 1);
-        const isHere = slug === currentSlug;
-        const label  = slug.replace(/_/g,' ') || 'default';
+        const slug    = k.slice(p.id.length + 1);
+        const isHere  = slug === currentSlug;
+        const label   = slug.replace(/_/g,' ') || 'default';
         return `<div style="display:flex;align-items:center;gap:.5rem">
           <span style="font-size:.72rem;font-weight:800;color:${isHere?'var(--orange)':'var(--soft)'};min-width:70px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(label)}">${isHere?'▶ ':''}${esc(label)}</span>
           <audio src="${url}" controls preload="none" style="flex:1;min-width:120px"></audio>
           <button class="vpm-del" onclick="deleteRec('${k}')" title="Delete recording">✕</button>
         </div>`;
       }).join('');
+
     return `<div class="vpm-item">
       <div class="vpm-item-head">
         <span style="font-size:1.3rem">${p.emoji}</span>
@@ -1085,15 +986,24 @@ function renderVpmList() {
   }).join('');
 }
 
+/* ── Live mic recording ── */
 async function startRec(personId) {
   const btn = document.getElementById('rec-btn-' + personId);
+
+  // Toggle off if recording this same person
   if (mediaRecorder && mediaRecorder.state === 'recording' && recPersonId === personId) {
-    mediaRecorder.stop(); return;
+    mediaRecorder.stop();
+    return;
   }
+  // Stop any other ongoing recording first
   if (mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
+
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    recChunks = []; recPersonId = personId; recStoryKey = recKey(personId);
+    recChunks   = [];
+    recPersonId = personId;
+    recStoryKey = recKey(personId);
+
     mediaRecorder = new MediaRecorder(stream);
     mediaRecorder.ondataavailable = e => { if (e.data.size) recChunks.push(e.data); };
     mediaRecorder.onstop = () => {
@@ -1102,7 +1012,9 @@ async function startRec(personId) {
       const reader = new FileReader();
       reader.onload = ev => {
         RECORDINGS[recStoryKey] = ev.target.result;
-        saveRecordings(); renderVpmList(); renderPersonChips();
+        saveRecordings();
+        renderVpmList();
+        renderPersonChips();
         const name = PERSONS.find(p => p.id === personId)?.name || 'narrator';
         toast('✅ Recording saved for ' + name + '!');
       };
@@ -1111,6 +1023,7 @@ async function startRec(personId) {
       if (b) { b.classList.remove('recording'); b.textContent = '🎙️ Record'; }
       recPersonId = null;
     };
+
     mediaRecorder.start();
     if (btn) { btn.classList.add('recording'); btn.textContent = '⏹ Stop'; }
     toast('🔴 Recording… tap Stop when done');
@@ -1120,14 +1033,20 @@ async function startRec(personId) {
   }
 }
 
+/* ── Upload MP3 / audio file ── */
 function uploadRec(e, personId) {
   const f = e.target.files[0]; if (!f) return;
-  if (f.size > 15 * 1024 * 1024) { toast('⚠️ File too big — under 15 MB please'); e.target.value = ''; return; }
+  if (f.size > 15 * 1024 * 1024) {
+    toast('⚠️ File too big — please use audio under 15 MB');
+    e.target.value = ''; return;
+  }
   const key = recKey(personId);
   const reader = new FileReader();
   reader.onload = ev => {
     RECORDINGS[key] = ev.target.result;
-    saveRecordings(); renderVpmList(); renderPersonChips();
+    saveRecordings();
+    renderVpmList();
+    renderPersonChips();
     const name = PERSONS.find(p => p.id === personId)?.name || 'narrator';
     toast('📁 Audio uploaded for ' + name + '!');
   };
@@ -1136,6 +1055,7 @@ function uploadRec(e, personId) {
   e.target.value = '';
 }
 
+/* ── Render narrator chips in the story viewer ── */
 function renderPersonChips() {
   ['vw-persons','vw-persons2'].forEach(id => {
     const el = document.getElementById(id); if (!el) return;
@@ -1144,16 +1064,23 @@ function renderPersonChips() {
       return;
     }
     let chips = PERSONS.map(p => {
-      const key = recKey(p.id);
-      const hasRec = !!RECORDINGS[key];
+      const key       = recKey(p.id);
+      const hasRec    = !!RECORDINGS[key];
       const isPlaying = playingPersonId === p.id;
       let cls = 'person-chip';
       if (hasRec)    cls += ' has-rec';
       if (isPlaying) cls += ' playing';
-      const label = isPlaying ? `${p.emoji} ${p.name} 🔊` : `${p.emoji} ${p.name}${hasRec?' ▶':' +'}`;
-      return `<button class="${cls}" onclick="playPerson('${p.id}')" title="${hasRec?'Play recording':'No recording yet'}">${label}</button>`;
+      const label = isPlaying
+        ? `${p.emoji} ${p.name} 🔊`
+        : `${p.emoji} ${p.name}${hasRec ? ' ▶' : ' +'}`;
+      const title = hasRec
+        ? 'Play recording for this story'
+        : 'No recording for this story yet — tap + Manage to record';
+      return `<button class="${cls}" onclick="playPerson('${p.id}')" title="${title}">${label}</button>`;
     }).join('');
-    if (playingPersonId) chips += `<button class="vc-stop" onclick="stopVoice()">⏹ Stop</button>`;
+    if (playingPersonId) {
+      chips += `<button class="vc-stop" onclick="stopVoice()">⏹ Stop</button>`;
+    }
     el.innerHTML = chips;
   });
 }
@@ -1161,31 +1088,32 @@ function renderPersonChips() {
 function playPerson(personId) {
   const key = recKey(personId);
   const url = RECORDINGS[key];
-  if (!url) { toast('No recording for this story yet — tap + Manage to add one'); return; }
-  stopVoice(); stopSpeaking();
-  playingPersonId = personId; renderPersonChips();
+  if (!url) {
+    toast('No recording for this story yet — tap + Manage to add one');
+    return;
+  }
+  stopVoice();
+  stopSpeaking(); // also stop AI voice if running
+  playingPersonId = personId;
+  renderPersonChips();
   playingAudio = new Audio(url);
   playingAudio.play().catch(err => {
-    console.error(err); toast('⚠️ Could not play audio');
-    playingPersonId = null; renderPersonChips();
+    console.error(err);
+    toast('⚠️ Could not play audio');
+    playingPersonId = null;
+    renderPersonChips();
   });
-  playingAudio.onended = () => { playingPersonId = null; playingAudio = null; renderPersonChips(); };
+  playingAudio.onended = () => {
+    playingPersonId = null;
+    playingAudio = null;
+    renderPersonChips();
+  };
 }
 
 function stopVoice() {
   if (playingAudio) { playingAudio.pause(); playingAudio = null; }
-  playingPersonId = null; renderPersonChips();
-}
-
-/* ── save: upsert all stories to Supabase ── */
-async function save() {
-  try {
-    await Promise.all(STORIES.map(s => upsertToSupabase(s)));
-    updateStorageIndicator();
-  } catch(e) {
-    console.error('save() error:', e);
-    toast('⚠️ Cloud save failed: ' + e.message);
-  }
+  playingPersonId = null;
+  renderPersonChips();
 }
 
 /* ═══════════════════════════════════════════════
@@ -1193,51 +1121,103 @@ async function save() {
 ═══════════════════════════════════════════════ */
 function renderGrid() {
   const grid = document.getElementById('story-grid');
-  document.getElementById('story-count-label').textContent =
-    STORIES.length === 0 ? 'Stories' : `${STORIES.length} Stor${STORIES.length===1?'y':'ies'}`;
+  const sec   = SECTIONS.find(s => s.id === currentSection) || SECTIONS[0];
+  const items = STORIES.filter(item => (item.type || 'story') === currentSection);
 
-  if (STORIES.length === 0) {
-    grid.innerHTML = `<div class="empty-state">
-      <div class="big">📖</div>
-      <p>No stories yet!<br>Click <strong>➕ Add Story</strong> to upload your first Advi &amp; Avi adventure.</p>
-    </div>`;
+  document.getElementById('story-count-label').textContent =
+    items.length === 0 ? sec.label : items.length + ' ' + sec.label;
+
+  if (items.length === 0) {
+    grid.innerHTML = '<div class="empty-state"><div class="big">' + sec.icon + '</div>' +
+      '<p>No ' + sec.label.toLowerCase() + ' yet!<br>Click <strong>➕ Add</strong> to create one.</p></div>';
+    grid.className = 'grid';
     return;
   }
 
-  grid.innerHTML = STORIES.map((s, i) => {
-    const thumb = s.type === 'comic'
-      ? (s.panels?.[0]?.dataUrl || '')
-      : (s.image || '');
-    return `<div class="card" onclick="openViewer(${i})">
-      <div class="card-img">
-        ${thumb ? `<img src="${thumb}" alt="${esc(s.title)}" loading="lazy">` : `<div style="height:100%;display:flex;align-items:center;justify-content:center;font-size:3rem">📖</div>`}
-        <div class="card-img-overlay"></div>
-        <span class="card-badge">📖 ${s.panels ? s.panels.length+' panels' : '1 image'}</span>
-        <span class="card-type">${s.type==='comic'?'🎨 Comic':'🖼️ Image'}</span>
-        <div class="card-qr" data-idx="${i}" title="Scan or tap to share '${esc(s.title)}'" onclick="event.stopPropagation();openQRForStory(${i})">
-          <canvas id="card-qr-${i}"></canvas>
-        </div>
-      </div>
-      <div class="card-body">
-        <div class="card-title">${esc(s.title)}</div>
-        <div class="card-preview">${esc(s.preview||'')}</div>
-        <div class="card-footer">
-          <div class="card-read">Read story <span>→</span></div>
-          <div class="card-actions">
-            <button class="card-action-btn" title="Print" onclick="event.stopPropagation();printStory(${i})">🖨️</button>
-            <button class="card-action-btn" title="Edit" onclick="event.stopPropagation();editStory(${i})">✏️</button>
-            <button class="card-action-btn" title="Delete" onclick="event.stopPropagation();deleteStory(${i})">🗑️</button>
-          </div>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
+  /* ── STORIES ── */
+  if (currentSection === 'story') {
+    grid.className = 'grid';
+    grid.innerHTML = items.map(s => {
+      const i = STORIES.indexOf(s);
+      const thumb = s.type === 'comic' ? (s.panels?.[0]?.dataUrl || '') : (s.image || '');
+      return '<div class="card" onclick="openViewer(' + i + ')">' +
+        '<div class="card-img">' +
+        (thumb ? '<img src="' + thumb + '" alt="' + esc(s.title) + '" loading="lazy">' :
+          '<div style="height:100%;display:flex;align-items:center;justify-content:center;font-size:3rem">📖</div>') +
+        '<div class="card-img-overlay"></div>' +
+        '<span class="card-badge">📖 ' + (s.panels ? s.panels.length + ' panels' : '1 image') + '</span>' +
+        '<span class="card-type">' + (s.type === 'comic' ? '🎨 Comic' : '🖼️ Image') + '</span>' +
+        '<div class="card-qr" data-idx="' + i + '" title="Share" onclick="event.stopPropagation();openQRForStory(' + i + ')">' +
+        '<canvas id="card-qr-' + i + '"></canvas></div>' +
+        '</div>' +
+        '<div class="card-body">' +
+        '<div class="card-title">' + esc(s.title) + '</div>' +
+        '<div class="card-preview">' + esc(s.preview || '') + '</div>' +
+        '<div class="card-footer">' +
+        '<div class="card-read">Read story <span>→</span></div>' +
+        '<div class="card-actions">' +
+        '<button class="card-action-btn" title="Print" onclick="event.stopPropagation();printStory(' + i + ')">🖨️</button>' +
+        '<button class="card-action-btn" title="Edit"  onclick="event.stopPropagation();editStory(' + i + ')">✏️</button>' +
+        '<button class="card-action-btn" title="Delete" onclick="event.stopPropagation();deleteStory(' + i + ')">🗑️</button>' +
+        '</div></div></div></div>';
+    }).join('');
+    renderCardQRs();
+    return;
+  }
 
-  // Draw mini QR codes on each card (after innerHTML is parsed)
-  renderCardQRs();
+  /* ── MATH FLIP CARDS ── */
+  if (currentSection === 'math') {
+    grid.className = 'math-grid-wrap';
+    grid.innerHTML = items.map(s => {
+      const i = STORIES.indexOf(s);
+      return '<div class="math-card-wrap">' +
+        '<div class="flip-card" id="flip-' + i + '" onclick="toggleFlip(' + i + ')">' +
+        '<div class="flip-card-inner">' +
+        '<div class="flip-card-front">' +
+        (s.problemImage ? '<img src="' + s.problemImage + '" alt="Problem" loading="lazy">' :
+          '<div style="height:100%;display:flex;align-items:center;justify-content:center;font-size:3.5rem;background:#f0e8d8">🔢</div>') +
+        '<span class="flip-label">🔢 Tap to flip</span>' +
+        '</div>' +
+        '<div class="flip-card-back">' +
+        (s.answerImage ? '<img src="' + s.answerImage + '" alt="Answer" loading="lazy">' :
+          '<div style="height:100%;display:flex;align-items:center;justify-content:center;font-size:3.5rem">✅</div>') +
+        '<span class="flip-label">✅ Answer</span>' +
+        '</div>' +
+        '</div></div>' +
+        '<div class="math-title">' + esc(s.title) + '</div>' +
+        '<div class="flip-hint">Tap card to flip · See answer</div>' +
+        '<div class="math-card-actions">' +
+        '<button class="card-action-btn" title="Edit"   onclick="editStory(' + i + ')">✏️</button>' +
+        '<button class="card-action-btn" title="Delete" onclick="deleteStory(' + i + ')">🗑️</button>' +
+        '</div></div>';
+    }).join('');
+    return;
+  }
+
+  /* ── COLORING PAGES ── */
+  if (currentSection === 'coloring') {
+    grid.className = 'grid';
+    grid.innerHTML = items.map(s => {
+      const i = STORIES.indexOf(s);
+      return '<div class="color-card">' +
+        '<div class="color-card-img" onclick="printColoringPage(' + i + ')">' +
+        (s.image ? '<img src="' + s.image + '" alt="' + esc(s.title) + '" loading="lazy">' :
+          '<div style="height:100%;display:flex;align-items:center;justify-content:center;font-size:3rem">🎨</div>') +
+        '</div>' +
+        '<div class="color-card-body">' +
+        '<div class="color-card-title">' + esc(s.title) + '</div>' +
+        '<div class="card-footer">' +
+        '<button class="btn btn-sm btn-pink" onclick="printColoringPage(' + i + ')">🖨️ Print</button>' +
+        '<div class="card-actions">' +
+        '<button class="card-action-btn" title="Edit"   onclick="editStory(' + i + ')">✏️</button>' +
+        '<button class="card-action-btn" title="Delete" onclick="deleteStory(' + i + ')">🗑️</button>' +
+        '</div></div></div></div>';
+    }).join('');
+    return;
+  }
 }
 
-/* Draw the mini QR code on every story card */
+
 function renderCardQRs() {
   STORIES.forEach((s, i) => {
     const canvas = document.getElementById('card-qr-' + i);
@@ -1401,8 +1381,9 @@ function openBookletPrint() {
 function openAdd() {
   editId = null;
   resetForm();
+  setSection(currentSection);           // pre-select current tab's section
   renderMgrList();
-  document.getElementById('add-modal-title').textContent = '➕ Add New Story';
+  document.getElementById('add-modal-title').textContent = '➕ Add New';
   document.getElementById('add-overlay').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -1420,23 +1401,45 @@ function setType(t) {
   document.getElementById('single-fields').style.display = t==='single' ? '' : 'none';
 }
 
-/* ── Image helpers ── */
+/* ── Cloudinary image upload ──────────────────────────────────────────────
+   Unsigned preset — safe to embed in client code by design.
+   Images go straight to Cloudinary CDN; we store the URL (not base64),
+   so IndexedDB stays tiny and the published HTML stays small.        ── */
+const CL_CLOUD  = 'duhvadwrq';
+const CL_PRESET = 'storyland_upload';
 
-/* addPanels: store File objects, show local previews immediately */
-async function addPanels(e) {
+async function uploadToCloudinary(file) {
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('upload_preset', CL_PRESET);
+  const res = await fetch('https://api.cloudinary.com/v1_1/' + CL_CLOUD + '/image/upload', {
+    method: 'POST', body: fd
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    // Show the exact Cloudinary error message
+    const msg = (data && data.error && data.error.message) || res.status;
+    throw new Error('Cloudinary: ' + msg);
+  }
+  if (!data.secure_url) throw new Error('Cloudinary returned no URL');
+  return data.secure_url;
+}
+
+/* add panel images — store File objects, upload to Cloudinary on Save */
+function addPanels(e) {
   const files = [...e.target.files];
   if (!files.length) return;
-  for (const f of files) {
-    const preview = URL.createObjectURL(f);
-    pendingPanels.push({ file: f, preview, caption: '' });
-  }
+  pendingPanels = [...pendingPanels, ...files.map(f => ({
+    file:    f,
+    preview: URL.createObjectURL(f),
+    caption: ''
+  }))];
   renderPanelList();
   e.target.value = '';
-  toast('✅ ' + files.length + ' image' + (files.length > 1 ? 's' : '') + ' selected!');
 }
 
 function renderPanelList() {
-  document.getElementById('panels-list').innerHTML = pendingPanels.map((p, i) => `
+  document.getElementById('panels-list').innerHTML = pendingPanels.map((p,i) => `
     <div class="panel-row">
       <img class="panel-thumb" src="${p.preview || p.dataUrl || ''}" alt="Panel ${i+1}">
       <input class="panel-cap" type="text" placeholder="Caption for panel ${i+1}…"
@@ -1445,24 +1448,87 @@ function renderPanelList() {
     </div>`).join('');
 }
 
-function removePanel(i) {
-  if (pendingPanels[i].preview) URL.revokeObjectURL(pendingPanels[i].preview);
-  pendingPanels.splice(i, 1);
-  renderPanelList();
-}
+function removePanel(i) { pendingPanels.splice(i,1); renderPanelList(); }
 
-/* single image */
+/* single image — store File, show local preview, upload on Save */
 function setSingleImg(e) {
   const f = e.target.files[0]; if (!f) return;
-  if (singleImgPreview) URL.revokeObjectURL(singleImgPreview);
   singleImgFile    = f;
   singleImgPreview = URL.createObjectURL(f);
   const img = document.getElementById('single-preview');
   img.src = singleImgPreview; img.classList.add('show');
 }
 
-/* save: upload images to Cloudinary, then upsert metadata to Supabase */
+/* save */
 async function saveStory() {
+  /* ── Math / Coloring paths ──────────────────────────────────── */
+  if (currentSectionType === 'math') {
+    const title = document.getElementById('fm-title').value.trim();
+    if (!title) { toast('Add a title!'); return; }
+    if (!mathProblemFile && !mathProblemPreview) { toast('Upload a problem image!'); return; }
+    if (!mathAnswerFile  && !mathAnswerPreview)  { toast('Upload an answer image!'); return; }
+    toast('Uploading images...');
+    let problemUrl = mathProblemPreview;
+    let answerUrl  = mathAnswerPreview;
+    try {
+      if (mathProblemFile) problemUrl = await uploadToCloudinary(mathProblemFile);
+      if (mathAnswerFile)  answerUrl  = await uploadToCloudinary(mathAnswerFile);
+    } catch(err) { toast('Upload failed: ' + err.message); return; }
+    const story = {
+      title,
+      preview: document.getElementById('fm-preview').value.trim(),
+      type: 'math',
+      problemImage: problemUrl,
+      answerImage:  answerUrl,
+      createdAt: new Date().toISOString()
+    };
+    if (editId !== null) {
+      story.id = STORIES[editId].id || ('story_' + Date.now());
+      story.createdAt = STORIES[editId].createdAt || story.createdAt;
+      STORIES[editId] = story;
+    } else {
+      story.id = 'story_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+      STORIES.push(story);
+    }
+    try { await upsertToSupabase(story); toast(editId !== null ? '✅ Updated!' : '🎉 Math problem added!'); }
+    catch(err) { toast('Save failed: ' + err.message); return; }
+    resetForm(); closeAdd(); renderGrid(); renderMgrList(); renderSectionTabs();
+    editId = null; document.getElementById('add-modal-title').textContent = '➕ Add New';
+    return;
+  }
+
+  if (currentSectionType === 'coloring') {
+    const title = document.getElementById('fc-title').value.trim();
+    if (!title) { toast('Add a title!'); return; }
+    if (!coloringFile && !coloringPreview) { toast('Upload a coloring page image!'); return; }
+    let imageUrl = coloringPreview;
+    if (coloringFile) {
+      toast('Uploading image...');
+      try { imageUrl = await uploadToCloudinary(coloringFile); }
+      catch(err) { toast('Upload failed: ' + err.message); return; }
+    }
+    const story = {
+      title,
+      type: 'coloring',
+      image: imageUrl,
+      createdAt: new Date().toISOString()
+    };
+    if (editId !== null) {
+      story.id = STORIES[editId].id || ('story_' + Date.now());
+      story.createdAt = STORIES[editId].createdAt || story.createdAt;
+      STORIES[editId] = story;
+    } else {
+      story.id = 'story_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+      STORIES.push(story);
+    }
+    try { await upsertToSupabase(story); toast(editId !== null ? '✅ Updated!' : '🎉 Colouring page added!'); }
+    catch(err) { toast('Save failed: ' + err.message); return; }
+    resetForm(); closeAdd(); renderGrid(); renderMgrList(); renderSectionTabs();
+    editId = null; document.getElementById('add-modal-title').textContent = '➕ Add New';
+    return;
+  }
+
+  /* ── Story path (existing) ───────────────────────────────────── */
   const title   = document.getElementById('f-title').value.trim();
   const preview = document.getElementById('f-preview').value.trim();
   if (!title) { toast('⚠️ Please add a title!'); return; }
@@ -1470,83 +1536,84 @@ async function saveStory() {
   let story = { title, preview, type: storyType, featured: document.getElementById('f-featured').checked };
 
   if (storyType === 'comic') {
-    if (!pendingPanels.length) { toast('⚠️ Add at least one panel image!'); return; }
-    toast('☁️ Uploading ' + pendingPanels.length + ' image' + (pendingPanels.length > 1 ? 's' : '') + ' to Cloudinary…');
+    if (!pendingPanels.length) { toast('⚠️ Add at least one image!'); return; }
+    toast('☁️ Uploading images…');
     try {
-      story.panels = await Promise.all(pendingPanels.map(async (p, i) => {
-        // If already a CDN URL (editing existing story) — skip upload
+      story.panels = await Promise.all(pendingPanels.map(async p => {
         const url = p.file ? await uploadToCloudinary(p.file) : (p.dataUrl || p.preview);
-        if (p.preview && p.file) URL.revokeObjectURL(p.preview);
-        toast('☁️ Uploaded ' + (i + 1) + ' / ' + pendingPanels.length + '…');
+        if (p.file && p.preview) URL.revokeObjectURL(p.preview);
         return { dataUrl: url, caption: p.caption || '' };
       }));
-    } catch(err) {
-      toast('❌ ' + err.message);
-      console.error(err);
-      return;
-    }
+    } catch(err) { toast('Upload failed: ' + err.message); return; }
   } else {
-    if (!singleImgFile && !singleImgPreview) { toast('⚠️ Please add an image!'); return; }
+    const hasImg = singleImgFile || singleImgPreview;
+    if (!hasImg) { toast('⚠️ Please add an image!'); return; }
     if (singleImgFile) {
-      toast('☁️ Uploading image to Cloudinary…');
+      toast('☁️ Uploading image…');
       try {
         story.image = await uploadToCloudinary(singleImgFile);
-        URL.revokeObjectURL(singleImgPreview);
-      } catch(err) {
-        toast('❌ ' + err.message);
-        console.error(err);
-        return;
-      }
+        if (singleImgPreview) URL.revokeObjectURL(singleImgPreview);
+      } catch(err) { toast('Upload failed: ' + err.message); return; }
     } else {
-      story.image = singleImgPreview; // already a URL (editing)
+      story.image = singleImgPreview;
     }
     story.content = document.getElementById('f-content').value.trim();
   }
 
-  story.createdAt = story.createdAt || new Date().toISOString();
-
+  // Assign a stable id if new
   if (editId !== null) {
     story.id = STORIES[editId].id || ('story_' + Date.now());
     STORIES[editId] = story;
-    toast('☁️ Saving to cloud…');
+    toast('✅ Story updated!');
   } else {
     story.id = 'story_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+    story.createdAt = new Date().toISOString();
     STORIES.push(story);
-    toast('☁️ Saving to cloud…');
+    toast('🎉 Story added!');
   }
-
-  try {
-    await upsertToSupabase(story);
-    toast(editId !== null ? '✅ Story updated!' : '🎉 Story added!');
-  } catch(err) {
-    toast('❌ Cloud save failed: ' + err.message);
-    console.error(err);
-    return;
-  }
-
+  await save();
   resetForm();
   closeAdd();
   renderGrid();
   renderMgrList();
+  renderSectionTabs();
   editId = null;
-  document.getElementById('add-modal-title').textContent = '➕ Add New Story';
+  document.getElementById('add-modal-title').textContent = '➕ Add New';
 }
 
 function editStory(i) {
   const s = STORIES[i];
   editId = i;
-  document.getElementById('add-modal-title').textContent = '✏️ Edit Story';
-  document.getElementById('f-title').value   = s.title;
-  document.getElementById('f-preview').value = s.preview||'';
-  document.getElementById('f-featured').checked = !!s.featured;
-  setType(s.type||'comic');
-  if (s.type==='comic') {
-    pendingPanels = (s.panels||[]).map(p=>({dataUrl:p.dataUrl,caption:p.caption||''}));
-    renderPanelList();
+  document.getElementById('add-modal-title').textContent = '✏️ Edit';
+  const sType = s.type || 'story';
+
+  if (sType === 'math') {
+    setSection('math');
+    const ft = document.getElementById('fm-title'); if(ft) ft.value = s.title || '';
+    const fp = document.getElementById('fm-preview'); if(fp) fp.value = s.preview || '';
+    mathProblemFile = null; mathProblemPreview = s.problemImage || null;
+    mathAnswerFile  = null; mathAnswerPreview  = s.answerImage  || null;
+    if (s.problemImage) { const img = document.getElementById('math-problem-preview'); img.src = s.problemImage; img.classList.add('show'); }
+    if (s.answerImage)  { const img = document.getElementById('math-answer-preview');  img.src = s.answerImage;  img.classList.add('show'); }
+  } else if (sType === 'coloring') {
+    setSection('coloring');
+    const ft = document.getElementById('fc-title'); if(ft) ft.value = s.title || '';
+    coloringFile = null; coloringPreview = s.image || null;
+    if (s.image) { const img = document.getElementById('coloring-preview'); img.src = s.image; img.classList.add('show'); }
   } else {
-    singleImgFile = null; singleImgPreview = s.image || null;
-    if (s.image) { const img=document.getElementById('single-preview'); img.src=s.image; img.classList.add('show'); }
-    document.getElementById('f-content').value = s.content||'';
+    setSection('story');
+    document.getElementById('f-title').value   = s.title;
+    document.getElementById('f-preview').value = s.preview || '';
+    document.getElementById('f-featured').checked = !!s.featured;
+    setType(s.type || 'comic');
+    if (s.type === 'comic') {
+      pendingPanels = (s.panels||[]).map(p=>({file:null, preview:p.dataUrl, caption:p.caption||''}));
+      renderPanelList();
+    } else {
+      singleImgFile=null; singleImgPreview=s.image||null;
+      if (s.image) { const img=document.getElementById('single-preview'); img.src=s.image; img.classList.add('show'); }
+      document.getElementById('f-content').value = s.content||'';
+    }
   }
   document.getElementById('add-overlay').classList.add('open');
   document.body.style.overflow='hidden';
@@ -1558,12 +1625,15 @@ async function deleteStory(i) {
   const sid = STORIES[i].id;
   STORIES.splice(i, 1);
   try { await deleteFromSupabase(sid); } catch(e) { console.error(e); }
-  renderGrid(); renderMgrList();
-  toast('🗑️ Story deleted');
+  renderGrid(); renderMgrList(); renderSectionTabs();
+  toast('🗑️ Deleted');
 }
 
 function resetForm() {
-  storyType = 'comic'; pendingPanels = []; singleImgFile = null; singleImgPreview = null; editId = null;
+  storyType = 'comic'; pendingPanels = []; singleImgFile=null; singleImgPreview=null; editId = null;
+  mathProblemFile = null; mathProblemPreview = null;
+  mathAnswerFile  = null; mathAnswerPreview  = null;
+  coloringFile    = null; coloringPreview    = null;
   document.getElementById('f-title').value = '';
   document.getElementById('f-preview').value = '';
   document.getElementById('f-featured').checked = false;
@@ -1572,7 +1642,13 @@ function resetForm() {
   document.getElementById('panels-input').value = '';
   document.getElementById('single-input').value = '';
   const sp = document.getElementById('single-preview'); sp.src=''; sp.classList.remove('show');
+  const fp = document.getElementById('fm-title'); if(fp) fp.value = '';
+  const fmp = document.getElementById('math-problem-preview'); if(fmp){fmp.src='';fmp.classList.remove('show');}
+  const fap = document.getElementById('math-answer-preview');  if(fap){fap.src='';fap.classList.remove('show');}
+  const cp  = document.getElementById('coloring-preview');     if(cp){cp.src='';cp.classList.remove('show');}
+  const ct  = document.getElementById('fc-title');             if(ct) ct.value = '';
   setType('comic');
+  setSection(currentSectionType);
 }
 
 function renderMgrList() {
@@ -1584,7 +1660,7 @@ function renderMgrList() {
       ${thumb ? `<img class="mgr-thumb" src="${thumb}" alt="">` : `<div class="mgr-thumb">📖</div>`}
       <div class="mgr-info">
         <div class="mgr-ttl">${esc(s.title)}</div>
-        <div class="mgr-sub">${s.type==='comic'?`🎨 ${(s.panels||[]).length} panels`:'🖼️ Single image'}</div>
+        <div class="mgr-sub">${s.type==='math'?'🔢 Math':s.type==='coloring'?'🎨 Colouring':s.type==='comic'?`📖 ${(s.panels||[]).length} panels`:'🖼️ Image'}</div>
       </div>
       <div class="mgr-btns">
         <button class="btn btn-sm btn-outline" onclick="editStory(${i})">✏️</button>
@@ -1626,6 +1702,91 @@ function applyTheme(t){
 ═══════════════════════════════════════════════ */
 let _tt;
 function toast(msg){ const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show'); clearTimeout(_tt); _tt=setTimeout(()=>el.classList.remove('show'),2600); }
+/* ═══════════════════════════════════════════════
+   SECTION TABS
+═══════════════════════════════════════════════ */
+function renderSectionTabs() {
+  var el = document.getElementById('section-tabs');
+  if (!el) return;
+  el.innerHTML = SECTIONS.map(function(s) {
+    var count  = STORIES.filter(function(item){ return (item.type || 'story') === s.id; }).length;
+    var active = currentSection === s.id;
+    var cls    = 'section-tab' + (active ? ' active' : '');
+    return '<button class="' + cls + '" data-id="' + s.id + '" onclick="switchSection(this.dataset.id)">' +
+      s.icon + ' ' + s.label +
+      '<span class="tab-count">' + count + '</span>' +
+      '</button>';
+  }).join('');
+}
+function switchSection(id) {
+  currentSection = id;
+  renderSectionTabs();
+  renderGrid();
+  const lbl = document.getElementById('story-count-label');
+  if (lbl) {
+    const sec = SECTIONS.find(s => s.id === id);
+    const n = STORIES.filter(item => (item.type || 'story') === id).length;
+    lbl.textContent = n === 0 ? (sec ? sec.label : id) : n + ' ' + (sec ? sec.label : id);
+  }
+}
+
+/* ── Set section type in the add form ── */
+function setSection(id) {
+  currentSectionType = id;
+  ['story', 'math', 'coloring'].forEach(s => {
+    const btn = document.getElementById('sec-' + s);
+    if (btn) btn.classList.toggle('on', s === id);
+  });
+  const sw = document.getElementById('story-fields-wrap');
+  const mf = document.getElementById('math-fields');
+  const cf = document.getElementById('coloring-fields');
+  if (sw) sw.style.display = id === 'story'    ? '' : 'none';
+  if (mf) mf.style.display = id === 'math'     ? '' : 'none';
+  if (cf) cf.style.display = id === 'coloring' ? '' : 'none';
+}
+
+/* ── Flip card toggle ── */
+function toggleFlip(idx) {
+  const card = document.getElementById('flip-' + idx);
+  if (card) card.classList.toggle('flipped');
+}
+
+/* ── Print a coloring page ── */
+function printColoringPage(idx) {
+  const s = STORIES[idx];
+  if (!s || !s.image) return;
+  document.getElementById('print-booklet').innerHTML = '';
+  document.getElementById('print-single').innerHTML = '<div class="ps-panel-page"><img src="' + s.image + '" alt=""></div>';
+  window.print();
+}
+
+/* ── Math form image handlers ── */
+function setMathProblem(e) {
+  const f = e.target.files[0]; if (!f) return;
+  if (mathProblemPreview && mathProblemFile) URL.revokeObjectURL(mathProblemPreview);
+  mathProblemFile    = f;
+  mathProblemPreview = URL.createObjectURL(f);
+  const img = document.getElementById('math-problem-preview');
+  img.src = mathProblemPreview; img.classList.add('show');
+}
+function setMathAnswer(e) {
+  const f = e.target.files[0]; if (!f) return;
+  if (mathAnswerPreview && mathAnswerFile) URL.revokeObjectURL(mathAnswerPreview);
+  mathAnswerFile    = f;
+  mathAnswerPreview = URL.createObjectURL(f);
+  const img = document.getElementById('math-answer-preview');
+  img.src = mathAnswerPreview; img.classList.add('show');
+}
+function setColoringImg(e) {
+  const f = e.target.files[0]; if (!f) return;
+  if (coloringPreview && coloringFile) URL.revokeObjectURL(coloringPreview);
+  coloringFile    = f;
+  coloringPreview = URL.createObjectURL(f);
+  const img = document.getElementById('coloring-preview');
+  img.src = coloringPreview; img.classList.add('show');
+}
+
+
 
 /* ═══════════════════════════════════════════════
    QR CODE GENERATOR
@@ -1915,28 +2076,27 @@ function showScannedStoryPreview(compact) {
 }
 
 /* ═══════════════════════════════════════════════
-   STORAGE SIZE INDICATOR
+   INIT — load from Supabase cloud
 ═══════════════════════════════════════════════ */
-function updateStorageIndicator() {
-  const el = document.getElementById('storage-indicator');
-  if (!el) return;
-  el.textContent = '☁️ ' + STORIES.length + ' stor' + (STORIES.length === 1 ? 'y' : 'ies') + ' synced · Images on Cloudinary CDN';
-}
-
-
 (async function init() {
-  // Load stories from Supabase cloud — works on any device, any browser
   try {
     STORIES = await loadFromSupabase();
-    STORIES.sort((a, b) => (a.createdAt || '').localeCompare(b.createdAt || ''));
+    // Sort by creation time so order is consistent
+    STORIES.sort(function(a, b) {
+      return (a.createdAt || a.id || '').localeCompare(b.createdAt || b.id || '');
+    });
   } catch(e) {
     console.error('Supabase load error:', e);
+    // Show the real error so it is easy to diagnose
+    const msg = e.message || 'Unknown error';
+    toast('Load error: ' + msg);
+    // Show in page too so it is visible even without dev tools
     const grid = document.getElementById('story-grid');
-    if (grid) grid.innerHTML = '<div class="empty-state"><div class="big">⚠️</div><p style="color:#e44;font-weight:800">Could not connect to cloud: ' + e.message + '</p><p style="margin-top:.5rem;font-size:.85rem">Check your Supabase project is active.</p></div>';
+    if (grid) grid.innerHTML = '<div class="empty-state"><div class="big">⚠️</div><p style="color:#e44;font-weight:800">' + msg + '</p><p style="margin-top:.5rem;font-size:.85rem">Check the browser Console (F12) for details.</p></div>';
     STORIES = [];
   }
   renderGrid();
-  updateStorageIndicator();
+  renderSectionTabs();
   handleDeepLink();
 })();
 
