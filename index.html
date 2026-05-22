@@ -557,15 +557,6 @@ footer{text-align:center;padding:2rem 1rem;color:var(--soft);font-size:.85rem;bo
             <img id="math-problem-preview" class="cover-preview" alt="">
           </div>
         </div>
-        <div class="fg">
-          <label>Answer Image * <span style="color:var(--soft)">(revealed on flip)</span></label>
-          <div class="drop-area" onclick="document.getElementById('math-answer-input').click()">
-            <div>✅ Upload answer image</div>
-            <div class="drop-hint">JPG · PNG · WebP</div>
-            <input type="file" id="math-answer-input" accept="image/*" onchange="setMathAnswer(event)">
-            <img id="math-answer-preview" class="cover-preview" alt="">
-          </div>
-        </div>
       </div>
 
       <!-- Coloring fields -->
@@ -678,7 +669,6 @@ let currentSectionType = 'story';  // which section is selected in the add form
 
 /* ── Math / Coloring form state ─────────────────────────────────── */
 let mathProblemFile = null, mathProblemPreview = null;
-let mathAnswerFile  = null, mathAnswerPreview  = null;
 let coloringFile    = null, coloringPreview    = null;
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -759,7 +749,6 @@ function updateStorageIndicator() {
   var st   = STORIES.length - math - col;
   el.textContent = '☁️ ' + st + ' stor' + (st===1?'y':'ies') + (math?' · '+math+' math':'') + (col?' · '+col+' colouring':'') + ' · Images on Cloudinary CDN';
 }
-
 
 /* ─ Export all stories to a downloadable JSON backup file ─ */
 function exportStories() {
@@ -1155,37 +1144,34 @@ function renderGrid() {
   }
   grid.className = 'grid';
   grid.innerHTML = items.map(function(s) {
-    var i = STORIES.indexOf(s);
-    var thumb, badge, tLabel, rLabel;
+    var i = STORIES.indexOf(s), thumb, badge, tLabel, rLabel;
     if ((s.section||s.type) === 'math') {
-      thumb = s.problemImage||''; badge = '🔢 Math problem'; tLabel = '🔢 Math'; rLabel = 'Open problem';
+      thumb=s.problemImage||''; badge='🔢 Math problem'; tLabel='🔢 Math'; rLabel='Open problem';
     } else if ((s.section||s.type) === 'coloring') {
-      thumb = s.image||''; badge = '🎨 Colouring page'; tLabel = '🎨 Colour'; rLabel = 'Open page';
+      thumb=s.image||''; badge='🎨 Colouring page'; tLabel='🎨 Colour'; rLabel='Open page';
     } else {
-      thumb = s.type==='comic' ? (s.panels&&s.panels[0]?s.panels[0].dataUrl:'') : (s.image||'');
-      badge = s.panels ? s.panels.length+' panels' : '1 image';
-      tLabel = s.type==='comic' ? '🎨 Comic' : '🖼 Image';
-      rLabel = 'Read story';
+      thumb=s.type==='comic'?(s.panels&&s.panels[0]?s.panels[0].dataUrl:''):(s.image||'');
+      badge=s.panels?s.panels.length+' panels':'1 image';
+      tLabel=s.type==='comic'?'🎨 Comic':'🖼 Image'; rLabel='Read story';
     }
-    return '<div class="card" onclick="openViewer('+i+')">' +
-      '<div class="card-img">' +
-      (thumb ? '<img src="'+thumb+'" alt="'+esc(s.title)+'" loading="lazy">' :
-        '<div style="height:100%;display:flex;align-items:center;justify-content:center;font-size:3rem">'+sec.icon+'</div>') +
-      '<div class="card-img-overlay"></div>' +
-      '<span class="card-badge">'+badge+'</span>' +
-      '<span class="card-type">'+tLabel+'</span>' +
-      '<div class="card-qr" data-idx="'+i+'" onclick="event.stopPropagation();openQRForStory('+i+')">' +
-      '<canvas id="card-qr-'+i+'"></canvas></div>' +
-      '</div><div class="card-body">' +
-      '<div class="card-title">'+esc(s.title)+'</div>' +
-      '<div class="card-preview">'+esc(s.preview||'')+'</div>' +
-      '<div class="card-footer">' +
-      '<div class="card-read">'+rLabel+' <span>→</span></div>' +
-      '<div class="card-actions">' +
-      '<button class="card-action-btn" title="Print"  onclick="event.stopPropagation();printStory('+i+')">&#128472;</button>' +
-      '<button class="card-action-btn" title="Edit"   onclick="event.stopPropagation();editStory('+i+')">&#9999;</button>' +
-      '<button class="card-action-btn" title="Delete" onclick="event.stopPropagation();deleteStory('+i+')">&#128465;</button>' +
-      '</div></div></div></div>';
+    return '<div class="card" onclick="openViewer('+i+')">'
+      +'<div class="card-img">'
+      +(thumb?'<img src="'+thumb+'" alt="'+esc(s.title)+'" loading="lazy">':
+        '<div style="height:100%;display:flex;align-items:center;justify-content:center;font-size:3rem">'+sec.icon+'</div>')
+      +'<div class="card-img-overlay"></div>'
+      +'<span class="card-badge">'+badge+'</span>'
+      +'<span class="card-type">'+tLabel+'</span>'
+      +'<div class="card-qr" onclick="event.stopPropagation();openQRForStory('+i+')">'
+      +'<canvas id="card-qr-'+i+'"></canvas></div>'
+      +'</div><div class="card-body">'
+      +'<div class="card-title">'+esc(s.title)+'</div>'
+      +'<div class="card-preview">'+esc(s.preview||'')+'</div>'
+      +'<div class="card-footer"><div class="card-read">'+rLabel+' <span>→</span></div>'
+      +'<div class="card-actions">'
+      +'<button class="card-action-btn" onclick="event.stopPropagation();printStory('+i+')">&#128472;</button>'
+      +'<button class="card-action-btn" onclick="event.stopPropagation();editStory('+i+')">&#9999;</button>'
+      +'<button class="card-action-btn" onclick="event.stopPropagation();deleteStory('+i+')">&#128465;</button>'
+      +'</div></div></div></div>';
   }).join('');
   renderCardQRs();
 }
@@ -1216,10 +1202,7 @@ function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').repla
 function openViewer(idx) {
   var s = STORIES[idx];
   if ((s.section||s.type) === 'math') {
-    viewStory = Object.assign({}, s, { type:'comic', panels:[
-      { dataUrl: s.problemImage||'', caption: 'Tap next to see the answer' },
-      { dataUrl: s.answerImage||'',  caption: 'Answer' }
-    ]});
+    viewStory = Object.assign({}, s, { type:'single', image: s.problemImage||'' });
   } else if ((s.section||s.type) === 'coloring') {
     viewStory = Object.assign({}, s, { type:'single' });
   } else { viewStory = s; }
@@ -1237,6 +1220,10 @@ function openViewer(idx) {
     document.getElementById('vw-single-content').innerHTML = ct;
   }
   renderVoiceChips(); renderPersonChips();
+  var hideAudio = (s.section||s.type)==='coloring' || (s.section||s.type)==='math';
+  ['vw-audiobar','vw-audiobar2'].forEach(function(id){
+    var el=document.getElementById(id); if(el) el.style.display=hideAudio?'none':'';
+  });
   document.getElementById('viewer-overlay').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -1320,16 +1307,15 @@ function printStory(idx) {
 }
 
 function buildSinglePrintHTML(s) {
-  if ((s.section||s.type)==='math') return s.problemImage?'<div class="ps-panel-page"><img src="'+s.problemImage+'" alt=""></div>':'';
-  if ((s.section||s.type)==='coloring') return s.image?'<div class="ps-panel-page"><img src="'+s.image+'" alt=""></div>':'';
+  if ((s.section||s.type)==='math')
+    return s.problemImage?'<div class="ps-panel-page"><img src="'+s.problemImage+'" alt=""></div>':'';
+  if ((s.section||s.type)==='coloring')
+    return s.image?'<div class="ps-panel-page"><img src="'+s.image+'" alt=""></div>':'';
   if (s.type==='comic' && s.panels && s.panels.length>0)
     return s.panels.map(function(p){return '<div class="ps-panel-page"><img src="'+p.dataUrl+'" alt=""></div>';}).join('');
   return s.image?'<div class="ps-panel-page"><img src="'+s.image+'" alt=""></div>':'';
 }
 
-/* ═══════════════════════════════════════════════
-   PRINT — BOOKLET (ALL STORIES)
-═══════════════════════════════════════════════ */
 function openBookletPrint() {
   if (STORIES.length === 0) { toast('⚠️ No stories to print yet!'); return; }
   document.getElementById('print-single').innerHTML = '';
@@ -1437,20 +1423,16 @@ async function saveStory() {
     const title = document.getElementById('fm-title').value.trim();
     if (!title) { toast('Add a title!'); return; }
     if (!mathProblemFile && !mathProblemPreview) { toast('Upload a problem image!'); return; }
-    if (!mathAnswerFile  && !mathAnswerPreview)  { toast('Upload an answer image!'); return; }
-    toast('Uploading images...');
+    toast('Uploading image...');
     let problemUrl = mathProblemPreview;
-    let answerUrl  = mathAnswerPreview;
     try {
       if (mathProblemFile) problemUrl = await uploadToCloudinary(mathProblemFile);
-      if (mathAnswerFile)  answerUrl  = await uploadToCloudinary(mathAnswerFile);
     } catch(err) { toast('Upload failed: ' + err.message); return; }
     const story = {
       title,
       preview: document.getElementById('fm-preview').value.trim(),
-      type: 'math',
+      type: 'math', section: 'math',
       problemImage: problemUrl,
-      answerImage:  answerUrl,
       createdAt: new Date().toISOString()
     };
     if (editId !== null) {
@@ -1563,9 +1545,7 @@ function editStory(i) {
     const ft = document.getElementById('fm-title'); if(ft) ft.value = s.title || '';
     const fp = document.getElementById('fm-preview'); if(fp) fp.value = s.preview || '';
     mathProblemFile = null; mathProblemPreview = s.problemImage || null;
-    mathAnswerFile  = null; mathAnswerPreview  = s.answerImage  || null;
     if (s.problemImage) { const img = document.getElementById('math-problem-preview'); img.src = s.problemImage; img.classList.add('show'); }
-    if (s.answerImage)  { const img = document.getElementById('math-answer-preview');  img.src = s.answerImage;  img.classList.add('show'); }
   } else if (sType === 'coloring') {
     setSection('coloring');
     const ft = document.getElementById('fc-title'); if(ft) ft.value = s.title || '';
@@ -1603,7 +1583,6 @@ async function deleteStory(i) {
 function resetForm() {
   storyType = 'comic'; pendingPanels = []; singleImgFile=null; singleImgPreview=null; editId = null;
   mathProblemFile = null; mathProblemPreview = null;
-  mathAnswerFile  = null; mathAnswerPreview  = null;
   coloringFile    = null; coloringPreview    = null;
   document.getElementById('f-title').value = '';
   document.getElementById('f-preview').value = '';
@@ -1615,7 +1594,6 @@ function resetForm() {
   const sp = document.getElementById('single-preview'); sp.src=''; sp.classList.remove('show');
   const fp = document.getElementById('fm-title'); if(fp) fp.value = '';
   const fmp = document.getElementById('math-problem-preview'); if(fmp){fmp.src='';fmp.classList.remove('show');}
-  const fap = document.getElementById('math-answer-preview');  if(fap){fap.src='';fap.classList.remove('show');}
   const cp  = document.getElementById('coloring-preview');     if(cp){cp.src='';cp.classList.remove('show');}
   const ct  = document.getElementById('fc-title');             if(ct) ct.value = '';
   setType('comic');
@@ -1682,11 +1660,8 @@ function renderSectionTabs() {
   el.innerHTML = SECTIONS.map(function(s) {
     var count  = STORIES.filter(function(item){ return (item.section||'story') === s.id; }).length;
     var active = currentSection === s.id;
-    var cls    = 'section-tab' + (active ? ' active' : '');
-    return '<button class="' + cls + '" data-id="' + s.id + '" onclick="switchSection(this.dataset.id)">' +
-      s.icon + ' ' + s.label +
-      '<span class="tab-count">' + count + '</span>' +
-      '</button>';
+    return '<button class="section-tab' + (active?' active':'') + '" data-id="' + s.id + '" onclick="switchSection(this.dataset.id)">' +
+      s.icon + ' ' + s.label + '<span class="tab-count">' + count + '</span></button>';
   }).join('');
 }
 function switchSection(id) {
@@ -1739,14 +1714,6 @@ function setMathProblem(e) {
   mathProblemPreview = URL.createObjectURL(f);
   const img = document.getElementById('math-problem-preview');
   img.src = mathProblemPreview; img.classList.add('show');
-}
-function setMathAnswer(e) {
-  const f = e.target.files[0]; if (!f) return;
-  if (mathAnswerPreview && mathAnswerFile) URL.revokeObjectURL(mathAnswerPreview);
-  mathAnswerFile    = f;
-  mathAnswerPreview = URL.createObjectURL(f);
-  const img = document.getElementById('math-answer-preview');
-  img.src = mathAnswerPreview; img.classList.add('show');
 }
 function setColoringImg(e) {
   const f = e.target.files[0]; if (!f) return;
