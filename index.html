@@ -688,68 +688,78 @@ let coloringFile    = null, coloringPreview    = null;
 /* ── Supabase — plain fetch (no SDK, no postMessage, no DataCloneError) ─── */
 const SB_URL = 'https://ddnztvtohxkuixrmzbac.supabase.co';
 const SB_KEY = 'sb_publishable_180pM3qus1rhPFEUSNPF4Q_u2-SLJbl';
-const SB_HDR = {
-  'apikey':        SB_KEY,
-  'Authorization': 'Bearer ' + SB_KEY,
-  'Content-Type':  'application/json',
-  'Prefer':        'resolution=merge-duplicates',
-};
+const SB_API = SB_URL + '/rest/v1';
+const SB_HDR = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json' };
+
+async function sbFetch(path, opts) {
+  const res = await fetch(SB_API + path, { headers: SB_HDR, ...opts });
+  const txt = await res.text();
+  if (!res.ok) {
+    let msg = txt;
+    try { const j = JSON.parse(txt); msg = j.message || j.error || txt; } catch(_) {}
+    throw new Error('Supabase ' + res.status + ': ' + msg.slice(0, 150));
+  }
+  return txt ? JSON.parse(txt) : null;
+}
 
 async function loadFromSupabase() {
-  const res = await fetch(SB_URL + '/rest/v1/stories?select=data&order=data->>createdAt.asc', {
-    headers: SB_HDR
-  });
-  if (!res.ok) {
-    const txt = await res.text().catch(() => '');
-    throw new Error('Supabase load failed ' + res.status + ': ' + txt.slice(0, 120));
-  }
-  const rows = await res.json();
-  return rows.map(r => r.data).filter(Boolean);
+  const rows = await sbFetch('/stories?select=data');
+  // JSON.parse(JSON.stringify()) strips any non-plain objects — keeps data clean
+  return (rows || []).map(r => JSON.parse(JSON.stringify(r.data))).filter(Boolean);
 }
 
 async function upsertToSupabase(story) {
-  const res = await fetch(SB_URL + '/rest/v1/stories', {
+  await sbFetch('/stories', {
     method: 'POST',
-    headers: SB_HDR,
-    body: JSON.stringify({ id: story.id, data: story }),
+    headers: { ...SB_HDR, 'Prefer': 'resolution=merge-duplicates' },
+    body: JSON.stringify({ id: story.id, data: JSON.parse(JSON.stringify(story)) })
   });
-  if (!res.ok) {
-    const txt = await res.text().catch(() => '');
-    throw new Error('Supabase save failed ' + res.status + ': ' + txt.slice(0, 120));
-  }
 }
 
 async function deleteFromSupabase(storyId) {
-  const res = await fetch(
-    SB_URL + '/rest/v1/stories?id=eq.' + encodeURIComponent(storyId),
-    { method: 'DELETE', headers: SB_HDR }
-  );
-  if (!res.ok) throw new Error('Supabase delete failed: HTTP ' + res.status);
+  await sbFetch('/stories?id=eq.' + encodeURIComponent(storyId), { method: 'DELETE' });
 }
 
-/* Save (upsert) all stories to Supabase */
+/* ═══════════════════════════════════════════════
+   PUBLISH SITE
+   Bakes current stories into a new index.html.
+   Upload that file to GitHub / Netlify and every
+   visitor sees the stories immediately on any device.
+═══════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════
+   PUBLISH SITE — bakes stories into index.html
+   Click Publish → download index.html →
+   drag onto your GitHub repo → done, no token needed.
+═══════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════
+   STORAGE — Supabase cloud sync
+═══════════════════════════════════════════════════════════════ */
+
+/* Save (upsert) all stories — called after any add/edit */
 async function save() {
+  if (!STORIES.length) return;
   try {
-    await Promise.all(STORIES.map(s => upsertToSupabase(s)));
-    updateStorageIndicator();
+    const rows = STORIES.map(s => ({ id: s.id, data: JSON.parse(JSON.stringify(s)) }));
+    await sbFetch('/stories', {
+      method: 'POST',
+      headers: { ...SB_HDR, 'Prefer': 'resolution=merge-duplicates' },
+      body: JSON.stringify(rows)
+    });
   } catch(e) {
-    console.error('save() error:', e);
-    toast('Cloud save failed: ' + e.message);
+    console.error('save error:', e);
+    toast('Cloud save failed: ' + (e.message || e));
   }
 }
 
 function updateStorageIndicator() {
-  const el = document.getElementById('storage-indicator');
+  var el = document.getElementById('storage-indicator');
   if (!el) return;
-  const total     = STORIES.length;
-  const math      = STORIES.filter(s => s.section === 'math').length;
-  const colouring = STORIES.filter(s => s.section === 'coloring').length;
-  const stories   = total - math - colouring;
-  el.textContent  = '☁️ ' + stories + ' stor' + (stories === 1 ? 'y' : 'ies') +
-    (math      ? ' · ' + math      + ' math'      : '') +
-    (colouring ? ' · ' + colouring + ' colouring' : '') +
-    ' · Images on Cloudinary CDN';
+  var math = STORIES.filter(function(s){ return s.section === 'math'; }).length;
+  var col  = STORIES.filter(function(s){ return s.section === 'coloring'; }).length;
+  var st   = STORIES.length - math - col;
+  el.textContent = '☁️ ' + st + ' stor' + (st===1?'y':'ies') + (math?' · '+math+' math':'') + (col?' · '+col+' colouring':'') + ' · Images on Cloudinary CDN';
 }
+
 
 /* ─ Export all stories to a downloadable JSON backup file ─ */
 function exportStories() {
@@ -1133,103 +1143,52 @@ function stopVoice() {
    RENDER GRID
 ═══════════════════════════════════════════════ */
 function renderGrid() {
-  const grid = document.getElementById('story-grid');
-  const sec   = SECTIONS.find(s => s.id === currentSection) || SECTIONS[0];
-  const items = STORIES.filter(item => (item.section || 'story') === currentSection);
-
+  var grid = document.getElementById('story-grid');
+  var sec  = SECTIONS.find(function(s){ return s.id === currentSection; }) || SECTIONS[0];
+  var items = STORIES.filter(function(item){ return (item.section||'story') === currentSection; });
   document.getElementById('story-count-label').textContent =
     items.length === 0 ? sec.label : items.length + ' ' + sec.label;
-
   if (items.length === 0) {
-    grid.innerHTML = '<div class="empty-state"><div class="big">' + sec.icon + '</div>' +
-      '<p>No ' + sec.label.toLowerCase() + ' yet!<br>Click <strong>➕ Add</strong> to create one.</p></div>';
-    grid.className = 'grid';
-    return;
+    grid.innerHTML = '<div class="empty-state"><div class="big">' + sec.icon + '</div>'
+      + '<p>No ' + sec.label.toLowerCase() + ' yet!<br>Click <strong>+ Add</strong> to create one.</p></div>';
+    grid.className = 'grid'; return;
   }
-
-  /* ── STORIES ── */
-  if (currentSection === 'story') {
-    grid.className = 'grid';
-    grid.innerHTML = items.map(s => {
-      const i = STORIES.indexOf(s);
-      const thumb = s.type === 'comic' ? (s.panels?.[0]?.dataUrl || '') : (s.image || '');
-      return '<div class="card" onclick="openViewer(' + i + ')">' +
-        '<div class="card-img">' +
-        (thumb ? '<img src="' + thumb + '" alt="' + esc(s.title) + '" loading="lazy">' :
-          '<div style="height:100%;display:flex;align-items:center;justify-content:center;font-size:3rem">📖</div>') +
-        '<div class="card-img-overlay"></div>' +
-        '<span class="card-badge">📖 ' + (s.panels ? s.panels.length + ' panels' : '1 image') + '</span>' +
-        '<span class="card-type">' + (s.type === 'comic' ? '🎨 Comic' : '🖼️ Image') + '</span>' +
-        '<div class="card-qr" data-idx="' + i + '" title="Share" onclick="event.stopPropagation();openQRForStory(' + i + ')">' +
-        '<canvas id="card-qr-' + i + '"></canvas></div>' +
-        '</div>' +
-        '<div class="card-body">' +
-        '<div class="card-title">' + esc(s.title) + '</div>' +
-        '<div class="card-preview">' + esc(s.preview || '') + '</div>' +
-        '<div class="card-footer">' +
-        '<div class="card-read">Read story <span>→</span></div>' +
-        '<div class="card-actions">' +
-        '<button class="card-action-btn" title="Print" onclick="event.stopPropagation();printStory(' + i + ')">🖨️</button>' +
-        '<button class="card-action-btn" title="Edit"  onclick="event.stopPropagation();editStory(' + i + ')">✏️</button>' +
-        '<button class="card-action-btn" title="Delete" onclick="event.stopPropagation();deleteStory(' + i + ')">🗑️</button>' +
-        '</div></div></div></div>';
-    }).join('');
-    renderCardQRs();
-    return;
-  }
-
-  /* ── MATH FLIP CARDS ── */
-  if (currentSection === 'math') {
-    grid.className = 'math-grid-wrap';
-    grid.innerHTML = items.map(s => {
-      const i = STORIES.indexOf(s);
-      return '<div class="math-card-wrap">' +
-        '<div class="flip-card" id="flip-' + i + '" onclick="toggleFlip(' + i + ')">' +
-        '<div class="flip-card-inner">' +
-        '<div class="flip-card-front">' +
-        (s.problemImage ? '<img src="' + s.problemImage + '" alt="Problem" loading="lazy">' :
-          '<div style="height:100%;display:flex;align-items:center;justify-content:center;font-size:3.5rem;background:#f0e8d8">🔢</div>') +
-        '<span class="flip-label">🔢 Tap to flip</span>' +
-        '</div>' +
-        '<div class="flip-card-back">' +
-        (s.answerImage ? '<img src="' + s.answerImage + '" alt="Answer" loading="lazy">' :
-          '<div style="height:100%;display:flex;align-items:center;justify-content:center;font-size:3.5rem">✅</div>') +
-        '<span class="flip-label">✅ Answer</span>' +
-        '</div>' +
-        '</div></div>' +
-        '<div class="math-title">' + esc(s.title) + '</div>' +
-        '<div class="flip-hint">Tap card to flip · See answer</div>' +
-        '<div class="math-card-actions">' +
-        '<button class="card-action-btn" title="Edit"   onclick="editStory(' + i + ')">✏️</button>' +
-        '<button class="card-action-btn" title="Delete" onclick="deleteStory(' + i + ')">🗑️</button>' +
-        '</div></div>';
-    }).join('');
-    return;
-  }
-
-  /* ── COLORING PAGES ── */
-  if (currentSection === 'coloring') {
-    grid.className = 'grid';
-    grid.innerHTML = items.map(s => {
-      const i = STORIES.indexOf(s);
-      return '<div class="color-card">' +
-        '<div class="color-card-img" onclick="printColoringPage(' + i + ')">' +
-        (s.image ? '<img src="' + s.image + '" alt="' + esc(s.title) + '" loading="lazy">' :
-          '<div style="height:100%;display:flex;align-items:center;justify-content:center;font-size:3rem">🎨</div>') +
-        '</div>' +
-        '<div class="color-card-body">' +
-        '<div class="color-card-title">' + esc(s.title) + '</div>' +
-        '<div class="card-footer">' +
-        '<button class="btn btn-sm btn-pink" onclick="printColoringPage(' + i + ')">🖨️ Print</button>' +
-        '<div class="card-actions">' +
-        '<button class="card-action-btn" title="Edit"   onclick="editStory(' + i + ')">✏️</button>' +
-        '<button class="card-action-btn" title="Delete" onclick="deleteStory(' + i + ')">🗑️</button>' +
-        '</div></div></div></div>';
-    }).join('');
-    return;
-  }
+  grid.className = 'grid';
+  grid.innerHTML = items.map(function(s) {
+    var i = STORIES.indexOf(s);
+    var thumb, badge, tLabel, rLabel;
+    if ((s.section||s.type) === 'math') {
+      thumb = s.problemImage||''; badge = '🔢 Math problem'; tLabel = '🔢 Math'; rLabel = 'Open problem';
+    } else if ((s.section||s.type) === 'coloring') {
+      thumb = s.image||''; badge = '🎨 Colouring page'; tLabel = '🎨 Colour'; rLabel = 'Open page';
+    } else {
+      thumb = s.type==='comic' ? (s.panels&&s.panels[0]?s.panels[0].dataUrl:'') : (s.image||'');
+      badge = s.panels ? s.panels.length+' panels' : '1 image';
+      tLabel = s.type==='comic' ? '🎨 Comic' : '🖼 Image';
+      rLabel = 'Read story';
+    }
+    return '<div class="card" onclick="openViewer('+i+')">' +
+      '<div class="card-img">' +
+      (thumb ? '<img src="'+thumb+'" alt="'+esc(s.title)+'" loading="lazy">' :
+        '<div style="height:100%;display:flex;align-items:center;justify-content:center;font-size:3rem">'+sec.icon+'</div>') +
+      '<div class="card-img-overlay"></div>' +
+      '<span class="card-badge">'+badge+'</span>' +
+      '<span class="card-type">'+tLabel+'</span>' +
+      '<div class="card-qr" data-idx="'+i+'" onclick="event.stopPropagation();openQRForStory('+i+')">' +
+      '<canvas id="card-qr-'+i+'"></canvas></div>' +
+      '</div><div class="card-body">' +
+      '<div class="card-title">'+esc(s.title)+'</div>' +
+      '<div class="card-preview">'+esc(s.preview||'')+'</div>' +
+      '<div class="card-footer">' +
+      '<div class="card-read">'+rLabel+' <span>→</span></div>' +
+      '<div class="card-actions">' +
+      '<button class="card-action-btn" title="Print"  onclick="event.stopPropagation();printStory('+i+')">&#128472;</button>' +
+      '<button class="card-action-btn" title="Edit"   onclick="event.stopPropagation();editStory('+i+')">&#9999;</button>' +
+      '<button class="card-action-btn" title="Delete" onclick="event.stopPropagation();deleteStory('+i+')">&#128465;</button>' +
+      '</div></div></div></div>';
+  }).join('');
+  renderCardQRs();
 }
-
 
 function renderCardQRs() {
   STORIES.forEach((s, i) => {
@@ -1255,31 +1214,32 @@ function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').repla
    VIEWER
 ═══════════════════════════════════════════════ */
 function openViewer(idx) {
-  viewStory = STORIES[idx];
-  panelIdx  = 0;
-  stopSpeaking();
-
+  var s = STORIES[idx];
+  if ((s.section||s.type) === 'math') {
+    viewStory = Object.assign({}, s, { type:'comic', panels:[
+      { dataUrl: s.problemImage||'', caption: 'Tap next to see the answer' },
+      { dataUrl: s.answerImage||'',  caption: 'Answer' }
+    ]});
+  } else if ((s.section||s.type) === 'coloring') {
+    viewStory = Object.assign({}, s, { type:'single' });
+  } else { viewStory = s; }
+  panelIdx = 0; stopSpeaking();
   document.getElementById('vw-title').textContent = viewStory.title;
-
-  if (viewStory.type === 'comic' && viewStory.panels?.length > 0) {
+  if (viewStory.type === 'comic' && viewStory.panels && viewStory.panels.length > 0) {
     document.getElementById('vw-panels-area').style.display = '';
     document.getElementById('vw-single-area').style.display = 'none';
-    buildDots();
-    renderPanel();
+    buildDots(); renderPanel();
   } else {
     document.getElementById('vw-panels-area').style.display = 'none';
     document.getElementById('vw-single-area').style.display = '';
-    document.getElementById('vw-single-img').src = viewStory.image || '';
-    const content = (viewStory.content || '').split(/\n\n+/).map(p=>`<p>${p}</p>`).join('');
-    document.getElementById('vw-single-content').innerHTML = content;
+    document.getElementById('vw-single-img').src = viewStory.image||'';
+    var ct = (viewStory.content||'').split(/\n\n+/).map(function(p){return '<p>'+p+'</p>';}).join('');
+    document.getElementById('vw-single-content').innerHTML = ct;
   }
-
-  renderVoiceChips();
-  renderPersonChips();
+  renderVoiceChips(); renderPersonChips();
   document.getElementById('viewer-overlay').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
-
 function closeViewer() {
   stopChipAudio();
   document.getElementById('viewer-overlay').classList.remove('open');
@@ -1360,13 +1320,11 @@ function printStory(idx) {
 }
 
 function buildSinglePrintHTML(s) {
-  if (s.type === 'comic' && s.panels?.length > 0) {
-    return s.panels.map(p =>
-      `<div class="ps-panel-page"><img src="${p.dataUrl}" alt=""></div>`
-    ).join('');
-  } else {
-    return s.image ? `<div class="ps-panel-page"><img src="${s.image}" alt=""></div>` : '';
-  }
+  if ((s.section||s.type)==='math') return s.problemImage?'<div class="ps-panel-page"><img src="'+s.problemImage+'" alt=""></div>':'';
+  if ((s.section||s.type)==='coloring') return s.image?'<div class="ps-panel-page"><img src="'+s.image+'" alt=""></div>':'';
+  if (s.type==='comic' && s.panels && s.panels.length>0)
+    return s.panels.map(function(p){return '<div class="ps-panel-page"><img src="'+p.dataUrl+'" alt=""></div>';}).join('');
+  return s.image?'<div class="ps-panel-page"><img src="'+s.image+'" alt=""></div>':'';
 }
 
 /* ═══════════════════════════════════════════════
@@ -1480,7 +1438,6 @@ async function saveStory() {
     if (!title) { toast('Add a title!'); return; }
     if (!mathProblemFile && !mathProblemPreview) { toast('Upload a problem image!'); return; }
     if (!mathAnswerFile  && !mathAnswerPreview)  { toast('Upload an answer image!'); return; }
-    
     toast('Uploading images...');
     let problemUrl = mathProblemPreview;
     let answerUrl  = mathAnswerPreview;
@@ -1488,17 +1445,14 @@ async function saveStory() {
       if (mathProblemFile) problemUrl = await uploadToCloudinary(mathProblemFile);
       if (mathAnswerFile)  answerUrl  = await uploadToCloudinary(mathAnswerFile);
     } catch(err) { toast('Upload failed: ' + err.message); return; }
-    
     const story = {
       title,
       preview: document.getElementById('fm-preview').value.trim(),
       type: 'math',
-      section: 'math',
       problemImage: problemUrl,
       answerImage:  answerUrl,
       createdAt: new Date().toISOString()
     };
-    
     if (editId !== null) {
       story.id = STORIES[editId].id || ('story_' + Date.now());
       story.createdAt = STORIES[editId].createdAt || story.createdAt;
@@ -1507,19 +1461,10 @@ async function saveStory() {
       story.id = 'story_' + Date.now() + '_' + Math.random().toString(36).slice(2);
       STORIES.push(story);
     }
-    
-    try { 
-      await upsertToSupabase(story); 
-      toast(editId !== null ? '✅ Updated!' : '🎉 Math problem added!'); 
-    } catch(err) { 
-      toast('Save failed: ' + err.message); 
-      return; 
-    }
-    
-    STORIES.sort((a, b) => (a.createdAt || '').localeCompare(b.createdAt || ''));
-    editId = null; renderGrid(); renderMgrList(); renderSectionTabs();
-    closeAdd(); resetForm();
-    document.getElementById('add-modal-title').textContent = '➕ Add New';
+    try { await upsertToSupabase(story); toast(editId !== null ? '✅ Updated!' : '🎉 Math problem added!'); }
+    catch(err) { toast('Save failed: ' + err.message); return; }
+    resetForm(); closeAdd(); renderGrid(); renderMgrList(); renderSectionTabs();
+    editId = null; document.getElementById('add-modal-title').textContent = '➕ Add New';
     return;
   }
 
@@ -1527,22 +1472,18 @@ async function saveStory() {
     const title = document.getElementById('fc-title').value.trim();
     if (!title) { toast('Add a title!'); return; }
     if (!coloringFile && !coloringPreview) { toast('Upload a coloring page image!'); return; }
-    
     let imageUrl = coloringPreview;
     if (coloringFile) {
       toast('Uploading image...');
       try { imageUrl = await uploadToCloudinary(coloringFile); }
       catch(err) { toast('Upload failed: ' + err.message); return; }
     }
-    
     const story = {
       title,
       type: 'coloring',
-      section: 'coloring',
       image: imageUrl,
       createdAt: new Date().toISOString()
     };
-    
     if (editId !== null) {
       story.id = STORIES[editId].id || ('story_' + Date.now());
       story.createdAt = STORIES[editId].createdAt || story.createdAt;
@@ -1551,28 +1492,19 @@ async function saveStory() {
       story.id = 'story_' + Date.now() + '_' + Math.random().toString(36).slice(2);
       STORIES.push(story);
     }
-    
-    try { 
-      await upsertToSupabase(story); 
-      toast(editId !== null ? '✅ Updated!' : '🎉 Colouring page added!'); 
-    } catch(err) { 
-      toast('Save failed: ' + err.message); 
-      return; 
-    }
-    
-    STORIES.sort((a, b) => (a.createdAt || '').localeCompare(b.createdAt || ''));
-    editId = null; renderGrid(); renderMgrList(); renderSectionTabs();
-    closeAdd(); resetForm();
-    document.getElementById('add-modal-title').textContent = '➕ Add New';
+    try { await upsertToSupabase(story); toast(editId !== null ? '✅ Updated!' : '🎉 Colouring page added!'); }
+    catch(err) { toast('Save failed: ' + err.message); return; }
+    resetForm(); closeAdd(); renderGrid(); renderMgrList(); renderSectionTabs();
+    editId = null; document.getElementById('add-modal-title').textContent = '➕ Add New';
     return;
   }
 
-  /* ── Story path (fixed) ───────────────────────────────────── */
+  /* ── Story path (existing) ───────────────────────────────────── */
   const title   = document.getElementById('f-title').value.trim();
   const preview = document.getElementById('f-preview').value.trim();
   if (!title) { toast('⚠️ Please add a title!'); return; }
 
-  let story = { title, preview, type: storyType, section: 'story', featured: document.getElementById('f-featured').checked };
+  let story = { title, preview, type: storyType, featured: document.getElementById('f-featured').checked };
 
   if (storyType === 'comic') {
     if (!pendingPanels.length) { toast('⚠️ Add at least one image!'); return; }
@@ -1599,10 +1531,9 @@ async function saveStory() {
     story.content = document.getElementById('f-content').value.trim();
   }
 
-  // Assign a stable ID and balance creation dates
+  // Assign a stable id if new
   if (editId !== null) {
     story.id = STORIES[editId].id || ('story_' + Date.now());
-    story.createdAt = STORIES[editId].createdAt || new Date().toISOString();
     STORIES[editId] = story;
     toast('✅ Story updated!');
   } else {
@@ -1611,22 +1542,13 @@ async function saveStory() {
     STORIES.push(story);
     toast('🎉 Story added!');
   }
-
-  // FIXED: Changed from broken 'await save()' to 'await upsertToSupabase(story)'
-  try {
-    await upsertToSupabase(story);
-  } catch(err) {
-    toast('Cloud save failed: ' + err.message);
-    return;
-  }
-
-  STORIES.sort((a, b) => (a.createdAt || '').localeCompare(b.createdAt || ''));
-  editId = null;
+  await save();
+  resetForm();
+  closeAdd();
   renderGrid();
   renderMgrList();
   renderSectionTabs();
-  closeAdd();
-  resetForm();
+  editId = null;
   document.getElementById('add-modal-title').textContent = '➕ Add New';
 }
 
@@ -1634,7 +1556,7 @@ function editStory(i) {
   const s = STORIES[i];
   editId = i;
   document.getElementById('add-modal-title').textContent = '✏️ Edit';
-  const sType = s.section || (s.type === 'math' ? 'math' : s.type === 'coloring' ? 'coloring' : 'story');
+  const sType = s.type || 'story';
 
   if (sType === 'math') {
     setSection('math');
@@ -1709,7 +1631,7 @@ function renderMgrList() {
       ${thumb ? `<img class="mgr-thumb" src="${thumb}" alt="">` : `<div class="mgr-thumb">📖</div>`}
       <div class="mgr-info">
         <div class="mgr-ttl">${esc(s.title)}</div>
-        <div class="mgr-sub">${(s.section||s.type)==='math'?'🔢 Math':(s.section||s.type)==='coloring'?'🎨 Colouring':s.type==='comic'?`📖 ${(s.panels||[]).length} panels`:'🖼️ Image'}</div>
+        <div class="mgr-sub">${s.type==='math'?'🔢 Math':s.type==='coloring'?'🎨 Colouring':s.type==='comic'?`📖 ${(s.panels||[]).length} panels`:'🖼️ Image'}</div>
       </div>
       <div class="mgr-btns">
         <button class="btn btn-sm btn-outline" onclick="editStory(${i})">✏️</button>
@@ -1758,7 +1680,7 @@ function renderSectionTabs() {
   var el = document.getElementById('section-tabs');
   if (!el) return;
   el.innerHTML = SECTIONS.map(function(s) {
-    var count  = STORIES.filter(function(item){ return (item.section || 'story') === s.id; }).length;
+    var count  = STORIES.filter(function(item){ return (item.section||'story') === s.id; }).length;
     var active = currentSection === s.id;
     var cls    = 'section-tab' + (active ? ' active' : '');
     return '<button class="' + cls + '" data-id="' + s.id + '" onclick="switchSection(this.dataset.id)">' +
